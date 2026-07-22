@@ -1,6 +1,8 @@
 # DGX Hackathon Journal
 
-VLA Navigation 的单页开发历程：从 NVIDIA Isaac 仿真、InternVLA 快速导航、Step3-VL 多视角语义慢规划，到 ROS 2 / Nav2 与 Unitree Go2 的本地具身智能体控制闭环。
+本项目回应「让 Agent 创作一切」：依托 NVIDIA DGX Spark，把多模态创作从文字与图像延伸到空间理解、导航计划和真实世界行动。页面记录了从 NVIDIA Isaac 仿真、InternVLA 快速决策、Step3-VL 多视角语义慢规划，到 ROS 2 / Nav2 与 Unitree Go2 本地具身智能体闭环的完整开发历程。
+
+作品面向建筑火灾造成断电、室内通信中断的救援场景：当云端链路不可依赖时，由现场 DGX Spark 持续完成多模态环境理解与 Agent 决策。单机构型使用 Step3-VL 进行高实时性语义导航；双机构型由 Step 3.7 Flash 负责高层环境探测与任务规划，导航节点持续执行和反馈。D435 与四路环视相机补足 Go2 原生低位前摄的观察范围，原型供电则在 STM32 打样周期不足时采用逆变器方案完成。
 
 ## 在线阅读
 

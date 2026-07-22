@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="VLA Navigation：InternVLA、Step3-VL、NVIDIA Isaac、ROS 2 与 Nav2 构成的本地具身智能体开发历程。">
+  <meta name="description" content="让 Agent 创作行动：依托 NVIDIA DGX Spark，由 InternVLA、Step3-VL、Isaac、ROS 2 与 Nav2 构成的本地多模态具身智能体。">
   <meta name="theme-color" content="#0b0d0c">
-  <meta property="og:title" content="让 Agent 在真实世界里走起来｜VLA Navigation 开发历程">
-  <meta property="og:description" content="从 Isaac 模拟基线到真实 Go2、多视角语义慢规划与可观测控制闭环。">
+  <meta property="og:title" content="让 Agent 创作行动｜VLA Navigation 开发历程">
+  <meta property="og:description" content="依托 NVIDIA DGX Spark，把多模态理解转化为可执行、可反馈的真实世界行动。">
   <meta property="og:type" content="website">
-  <title>让 Agent 在真实世界里走起来｜DGX Hackathon Journal</title>
+  <title>让 Agent 创作行动｜DGX Hackathon Journal</title>
   <style>
     :root {
       --ink: #101310;
@@ -183,6 +183,17 @@
     .principle:last-child { border-bottom: 0; }
     .principle span { display: block; margin-bottom: 8px; color: var(--muted); font: 700 11px ui-monospace, monospace; letter-spacing: .12em; }
     .principle strong { font-size: 18px; }
+    .scenario-flow { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 28px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: var(--ink); }
+    .scenario-step { min-height: 188px; position: relative; padding: 28px; color: #f2f1e9; border-right: 1px solid var(--line-dark); }
+    .scenario-step:last-child { border-right: 0; background: var(--lime); color: var(--ink); }
+    .scenario-step::after { content: "→"; position: absolute; right: -12px; top: 25px; z-index: 2; color: var(--lime); font-size: 20px; }
+    .scenario-step:nth-last-child(-n+2)::after { color: var(--ink); }
+    .scenario-step:last-child::after { display: none; }
+    .scenario-step span { display: block; margin-bottom: 32px; color: var(--lime); font: 750 11px ui-monospace, monospace; letter-spacing: .11em; }
+    .scenario-step:last-child span { color: var(--ink); }
+    .scenario-step strong { display: block; margin-bottom: 8px; font-size: 21px; line-height: 1.2; }
+    .scenario-step small { color: #aeb4ab; line-height: 1.5; }
+    .scenario-step:last-child small { color: rgba(16,19,16,.72); }
 
     .journey { color: #f2f1e9; background: var(--night); }
     .journey .muted { color: var(--muted-dark); }
@@ -245,6 +256,13 @@
     .capability-index { color: var(--lime); font: 750 12px ui-monospace, monospace; }
     .capability h3 { margin-bottom: 10px; font-size: 23px; }
     .capability p { margin-bottom: 0; color: #aeb4ab; }
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
+    .mode-card { padding: 26px; border-radius: 20px; color: var(--ink); background: var(--lime); }
+    .mode-card:last-child { color: #f1f0e9; background: #20271e; border: 1px solid var(--line-dark); }
+    .mode-card span { font: 750 11px ui-monospace, monospace; letter-spacing: .11em; }
+    .mode-card h3 { margin: 28px 0 12px; font-size: 25px; }
+    .mode-card p { margin: 0; color: rgba(16,19,16,.72); }
+    .mode-card:last-child p { color: #aeb4ab; }
 
     .stack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
     .stack-card { min-height: 360px; display: flex; flex-direction: column; padding: 30px; border: 1px solid var(--line); border-radius: var(--radius); background: #f8f6ef; }
@@ -310,6 +328,9 @@
       .stack-card .stack-label { margin-bottom: 30px; }
       .stack-card h3 { margin-top: 0; }
       .optimization { grid-template-columns: 1fr; }
+      .scenario-flow { grid-template-columns: repeat(2, 1fr); }
+      .scenario-step:nth-child(2) { border-right: 0; }
+      .scenario-step:nth-child(-n+2) { border-bottom: 1px solid var(--line-dark); }
       .closing-card { grid-template-columns: 1fr; }
     }
 
@@ -328,6 +349,9 @@
       .phase-index::after { left: 15px; }
       .chain { grid-template-columns: 1fr; padding: 14px; }
       .chain-note, .optimization { grid-template-columns: 1fr; }
+      .scenario-flow, .mode-grid { grid-template-columns: 1fr; }
+      .scenario-step { min-height: auto; border-right: 0; border-bottom: 1px solid var(--line-dark); }
+      .scenario-step::after { display: none; }
       .capability { grid-template-columns: 44px 1fr; padding: 22px; }
       .machine { grid-template-columns: 1fr; }
       .footer-inner { flex-direction: column; }
@@ -366,20 +390,20 @@
       <div class="hero-grid" aria-hidden="true"></div>
       <div class="orbital" aria-hidden="true"><span class="orbit-dot"></span></div>
       <div class="shell hero-content">
-        <p class="eyebrow">DGX Hackathon · Development Story · 2026</p>
-        <h1>让 Agent<br>在真实世界里<em>走起来</em></h1>
+        <p class="eyebrow">技术开发竞赛 · NVIDIA × StepFun · 让 Agent 创作一切</p>
+        <h1>让 Agent<br><em>创作行动</em></h1>
         <div class="hero-copy">
-          <p>我们把 InternVLA 的快速具身决策、Step3‑VL 的多视角语义推理、NVIDIA Isaac 的可复现仿真，以及 ROS 2 / Nav2 的可靠执行连接成一条本地闭环。从一句导航指令开始，直到机器人行动、观察、再判断。</p>
+          <p>“创作”不只发生在文字、图像与视频里。面向火灾导致断电、断网的楼宇救援场景，我们依托 NVIDIA DGX Spark，让多模态 Agent 在现场创作空间理解、探索计划和可执行行动。机器人从一句任务开始，持续观察、思考、行动，再根据新反馈创作下一步。</p>
           <div class="hero-action">
             <a class="button primary" href="#architecture">查看控制链 <span aria-hidden="true">↓</span></a>
             <a class="button" href="https://github.com/strTATQwQ/vla-nav-panel">GitHub 源码 <span aria-hidden="true">↗</span></a>
           </div>
         </div>
         <div class="hero-meta" aria-label="项目关键特征">
-          <div class="hero-stat"><strong>2</strong><span>快 / 慢推理路径</span></div>
-          <div class="hero-stat"><strong>4+3</strong><span>语义视角与实时传感器视图</span></div>
-          <div class="hero-stat"><strong>Local</strong><span>模型与智能体本地部署</span></div>
-          <div class="hero-stat"><strong>Closed</strong><span>观察—决策—执行闭环</span></div>
+          <div class="hero-stat"><strong>2</strong><span>快 / 慢多模态 Agent 路径</span></div>
+          <div class="hero-stat"><strong>4+3</strong><span>共同构成空间理解的视觉视角</span></div>
+          <div class="hero-stat"><strong>DGX</strong><span>Spark 本地多模型协作</span></div>
+          <div class="hero-stat"><strong>Action</strong><span>从内容生成走向行动生成</span></div>
         </div>
       </div>
     </section>
@@ -387,14 +411,14 @@
     <section id="origin">
       <div class="shell">
         <div class="section-head reveal">
-          <div><p class="eyebrow">01 · Origin</p><h2>我们想解决的，<br>不是一次推理。</h2></div>
-          <p class="lead">多模态模型能描述眼前的世界，但具身 Agent 必须持续回答三个更难的问题：我在哪里、下一步做什么、怎样安全地把决定变成运动。</p>
+          <div><p class="eyebrow">01 · Origin</p><h2>如果 Agent 能创作一切，<br>它也应该能创作行动。</h2></div>
+          <p class="lead">多模态 Agent 已经能够创作内容、组织工作流。我们进一步追问：它能否理解自己所处的空间，创作一条可执行的行动方案，并在真实反馈中持续修正？</p>
         </div>
         <div class="origin-grid">
           <article class="origin-story reveal">
-            <h3>从“看懂一张图”走向“完成一个任务”</h3>
-            <p>项目起点是自然语言视觉导航：让智能体根据指令和第一视角图像，在陌生室内环境中寻找目标。很快我们发现，模型输出只是控制链的一小段。仿真坐标、时间戳、相机外参、动作协议、局部规划、异常恢复、资源互斥和真机安全，任何一个环节不可信，最终结果就没有意义。</p>
-            <p>因此我们把目标重新定义为一套<strong>可观测、可复现、可安全收口的具身智能体系统</strong>。它既要让大模型发挥语义能力，也要把高频运动交给确定性的导航与安全组件；既能在 Isaac 中反复验证，也能平滑迁移到 Unitree Go2 的真实传感器链。</p>
+            <h3>把多模态创作延伸到物理世界</h3>
+            <p>拿到 DGX Spark 后，我们先问了一个比“能跑多大的模型”更重要的问题：<strong>什么任务真正需要现场端侧算力，而不是云端服务？</strong>单纯的数据安全可以通过隔离机房解决，偏远区域也可能通过专网或卫星链路补充连接；但消防救援提供了更明确的答案。</p>
+            <p>楼宇深处的移动通信覆盖往往依赖室内分布系统和微基站。一旦火灾造成全楼断电，室内网络可能随之中断，而此时救援 Agent 恰恰需要自主感知、探索环境、寻找目标并规划撤离方向。它不能等待云端恢复。因此我们构建了一套<strong>可离线运行、可观测、可安全收口的具身智能体工作流</strong>：大模型在现场理解与规划，确定性的导航组件把决策可靠地变成行动。</p>
           </article>
           <aside class="principles reveal" aria-label="工程原则">
             <div class="principle"><span>PRINCIPLE 01</span><strong>先冻结接口，再并行开发</strong></div>
@@ -403,14 +427,20 @@
             <div class="principle"><span>PRINCIPLE 04</span><strong>仿真先行，真机逐级放行</strong></div>
           </aside>
         </div>
+        <div class="scenario-flow reveal" aria-label="火灾断网场景与本地智能体响应链">
+          <div class="scenario-step"><span>01 · INCIDENT</span><strong>建筑发生火灾</strong><small>烟雾、遮挡与陌生空间让远程人工判断变得困难。</small></div>
+          <div class="scenario-step"><span>02 · POWER</span><strong>全楼电力中断</strong><small>室内通信设施与既有信息系统可能同时失效。</small></div>
+          <div class="scenario-step"><span>03 · NETWORK</span><strong>云端链路不可依赖</strong><small>救援任务仍需要即时感知、规划和连续决策。</small></div>
+          <div class="scenario-step"><span>04 · LOCAL AGENT</span><strong>DGX Spark 现场决策</strong><small>多模态 Agent 离线创作探索路径、导航动作与环境摘要。</small></div>
+        </div>
       </div>
     </section>
 
     <section class="journey" id="journey">
       <div class="shell">
         <div class="section-head reveal">
-          <div><p class="eyebrow">02 · Journey</p><h2>两条主对话，<br>一条演进主线。</h2></div>
-          <p class="lead muted">第一阶段建立导航核心与并行资源秩序；第二阶段把系统推向真实机器人、完整传感器和公开操作面板。下面记录的是关键决策，不是实验成绩单。</p>
+          <div><p class="eyebrow">02 · Journey</p><h2>从创作判断，<br>到创作行动。</h2></div>
+          <p class="lead muted">第一阶段让 Agent 在仿真世界中完成观察、决策与执行；第二阶段把这套多模态工作流推向真实机器人、完整传感器和公开操作面板。下面记录的是关键决策，不是实验成绩单。</p>
         </div>
         <div class="timeline">
           <article class="phase reveal">
@@ -459,7 +489,7 @@
             <div class="phase-index">PHASE 07</div>
             <div class="phase-body">
               <div><h3>从仿真走向真实 Go2 与公开面板</h3><div class="phase-tags"><span class="tag">UNITREE GO2</span><span class="tag">D435</span><span class="tag">OPERATOR UI</span></div></div>
-              <p>第二条主对话完成了 Go2 官方 ROS 2 通信、D435 RGB‑D、LiDAR、前相机和四路环境相机的接入，并用逐级安全确认验证站立与基础运动。随后，运行状态被整理为独立的 VLA Navigation Operator Panel：中间是多相机视图，两侧呈现任务、结构化决策、执行链、ROS 状态和本地推理资源。</p>
+              <p>第二条主对话完成了 Go2 官方 ROS 2 通信、D435 RGB‑D、LiDAR、前相机和四路环视相机的接入。Go2 原生前摄视角较低，我们通过增加 D435 获得更适合导航的彩色与深度观察，再用前、后、左、右相机形成近 360° 环境信息。随后，运行状态被整理为独立 Operator Panel，让操作员同时看到任务、结构化决策、执行链、机器人状态和本地推理资源。</p>
             </div>
           </article>
         </div>
@@ -493,8 +523,8 @@
       <div class="shell step3-grid">
         <div class="step3-copy reveal">
           <p class="eyebrow">04 · StepFun</p>
-          <h2>Step3‑VL：<br>为导航补上<br>“理解之后再行动”。</h2>
-          <p>在我们的系统里，Step3‑VL 不是聊天组件，也不直接接管底层速度。它是常驻于 DGX Spark 的多模态语义慢规划器，专注处理高价值、长时间尺度的判断，让快速路径保持流畅，让关键路口更有依据。</p>
+          <h2>Step3‑VL：<br>创作对空间的<br>深层理解。</h2>
+          <p>在我们的系统里，Step3‑VL 是常驻于 DGX Spark 的多模态语义慢规划器。它把四个方向的视觉内容与自然语言任务组织成统一的空间叙事，再从中创作目标证据、方向比较和下一步策略，让快速路径保持流畅，让关键路口更有依据。</p>
           <p>这种分工把模型能力放在最合适的位置：视觉语义、目标对齐、跨视角比较和策略建议；随后由既有的身份门、Nav2 与安全执行链把建议转化为可控动作。</p>
         </div>
         <div class="capabilities">
@@ -503,6 +533,10 @@
           <article class="capability reveal"><div class="capability-index">03</div><div><h3>候选方向与 frontier 排序</h3><p>在 Nav2 或快速路径给出的合法候选集合中比较前进、左转、右转、视点或 frontier，让语义判断进入真实控制链，同时保留确定性的动作边界。</p></div></article>
           <article class="capability reveal"><div class="capability-index">04</div><div><h3>事件触发的深思考</h3><p>在观测受限、局部超时、目标证据变化或恢复阶段触发慢规划，输出场景摘要、证据、受阻方向、推荐候选、置信度与是否继续观察。</p></div></article>
           <article class="capability reveal"><div class="capability-index">05</div><div><h3>结构化决策与可观测性</h3><p>推理结果被压缩为稳定 JSON 合同，操作面板只展示允许公开的决策摘要，不暴露隐藏推理、原始提示或内部文件路径。</p></div></article>
+          <div class="mode-grid reveal" aria-label="单机与双机 Agent 构型">
+            <article class="mode-card"><span>SINGLE · REAL-TIME</span><h3>单机构型</h3><p>Step3‑VL 结合环视图像与 D435 深度信息，承担高实时性语义导航，在紧凑部署中完成观察、方向判断与动作建议。</p></article>
+            <article class="mode-card"><span>DUAL · EXPLORATION</span><h3>双机构型</h3><p>Step 3.7 Flash 作为高层多模态 Agent，面向自主环境探测、任务分解与信息汇总；快速导航链在另一计算节点持续执行与反馈。</p></article>
+          </div>
         </div>
       </div>
     </section>
@@ -510,13 +544,13 @@
     <section id="stack">
       <div class="shell">
         <div class="section-head reveal">
-          <div><p class="eyebrow">05 · Technology</p><h2>一套真正落地的<br>本地技术栈。</h2></div>
-          <p class="lead">技术选择围绕三个目标展开：本地算力充分利用、仿真到真机接口一致、每一层都能单独观测和回退。</p>
+          <div><p class="eyebrow">05 · Technology</p><h2>DGX Spark 支撑的<br>多模态创作工作流。</h2></div>
+          <p class="lead">DGX Spark 不是一台被动运行单个模型的服务器，而是 Agent 的本地创作引擎：在同一算力平台上组织视觉理解、快速决策、语义慢规划、结构化输出与运行观测。</p>
         </div>
         <div class="stack-grid">
           <article class="stack-card featured reveal">
             <span class="stack-label">NVIDIA PLATFORM & SDK</span>
-            <h3>NVIDIA 计算与仿真底座</h3>
+            <h3>NVIDIA 本地 Agent 创作底座</h3>
             <ul class="stack-list">
               <li>DGX Spark · 本地大模型推理</li>
               <li>CUDA / PyTorch · BF16 推理</li>
@@ -532,7 +566,9 @@
             <h3>多模态推理与具身决策</h3>
             <ul class="stack-list">
               <li>Step3‑VL‑10B · 多视角语义慢规划</li>
+              <li>Step 3.7 Flash · 高层 Agent 与环境探测</li>
               <li>InternVLA / InternNav · 快速导航策略</li>
+              <li>vLLM · 本地 OpenAI 兼容推理服务</li>
               <li>结构化候选协议 · 可验证决策</li>
               <li>常驻模型服务 · 跨 episode 复用</li>
               <li>事件触发 · 快慢路径协同</li>
@@ -551,15 +587,15 @@
             </ul>
           </article>
         </div>
-        <p class="stack-footnote reveal">Cosmos Reason2、Nvblox 与 cuVSLAM 代表项目中完成接口审计或可切换接入的 NVIDIA 路线；最终控制链按任务与门禁选择启用组件。页面不发布模型权重、数据集或实验结果文件。</p>
+        <p class="stack-footnote reveal"><a href="https://github.com/stepfun-ai/Step-3.7-Flash">Step 3.7 Flash</a> 是面向 Agent 工作流的原生视觉语言模型，支持本地部署与 vLLM 等推理后端；项目将其用于双机构型的高层环境探索。Cosmos Reason2、Nvblox 与 cuVSLAM 代表完成接口审计或可切换接入的 NVIDIA 路线。页面不发布模型权重、数据集或实验结果文件。</p>
       </div>
     </section>
 
     <section class="deployment" id="deployment">
       <div class="shell">
         <div class="section-head reveal">
-          <div><p class="eyebrow">06 · Local Deployment</p><h2>模型留在本地，<br>控制也留在本地。</h2></div>
-          <p class="lead">智能体不依赖云端 API。大模型、仿真、ROS 2 与操作面板通过局域网组成可复现部署，敏感视觉与机器人状态不离开现场。</p>
+          <div><p class="eyebrow">06 · Local Deployment</p><h2>创作发生在本地，<br>行动也发生在本地。</h2></div>
+          <p class="lead">智能体不依赖云端 API。DGX Spark 上的大模型、Isaac 仿真、ROS 2 与操作面板组成完整的本地多模态生产工作流，视觉内容、任务上下文和机器人状态不离开现场。</p>
         </div>
         <div class="deploy-layout">
           <div class="deploy-summary reveal">
@@ -576,6 +612,7 @@
           <div class="lanes">
             <div class="machine reveal"><span class="machine-label">COMPUTE</span><div><strong>DGX Spark：模型与语义</strong><p class="muted">运行 InternVLA 快速策略、Step3‑VL‑10B BF16 服务、结构化输出解析及本地资源监控。</p></div></div>
             <div class="machine reveal"><span class="machine-label">SIMULATION</span><div><strong>Isaac 工作站：世界与执行</strong><p class="muted">运行 Isaac Sim、场景资产、相机渲染、ROS 2 bridge、Nav2 和评测生命周期。</p></div></div>
+            <div class="machine reveal"><span class="machine-label">POWER</span><div><strong>原型供电：逆变器方案</strong><p class="muted">原计划的 STM32 供电板受黑客松打样周期限制，原型阶段改用成熟逆变器完成 DGX 现场供电，优先保证系统按期形成可工作的救援演示闭环。</p></div></div>
             <div class="machine reveal"><span class="machine-label">ROBOT</span><div><strong>Unitree Go2：真实反馈</strong><p class="muted">提供机身状态、前相机、LiDAR 与运动接口；D435 和环境相机补充近场深度与多视角语义。</p></div></div>
             <div class="machine reveal"><span class="machine-label">OPERATOR</span><div><strong>VLA Nav Panel：统一观察入口</strong><p class="muted">通过 allowlist 投影展示任务、相机、结构化决策、执行阶段和运行资源，不复制内部凭证与原始推理。</p></div></div>
           </div>
@@ -623,8 +660,8 @@
         <div class="closing-card reveal">
           <div>
             <p class="eyebrow">What We Built</p>
-            <h2>不是让模型“说会走”，<br>而是让系统真的闭环。</h2>
-            <p>VLA Navigation 把 NVIDIA 本地算力、Isaac 仿真、Step3‑VL 多模态语义、InternVLA 快速决策与 ROS 2 / Nav2 执行组织成一个可继续演进的具身 Agent。下一步不是重写控制链，而是在已经冻结的边界内持续增强自然语言任务入口、语义规划策略与真机部署体验。</p>
+            <h2>Agent 创作的，<br>不只是答案，<br>而是下一步行动。</h2>
+            <p>VLA Navigation 对「让 Agent 创作一切」的回答，是把创作从数字内容延伸到断网救援现场：依托 NVIDIA DGX Spark，Step3‑VL 创作实时空间语义，Step 3.7 Flash 组织高层环境探索，InternVLA 生成快速局部决策，ROS 2 / Nav2 将它们变成可执行、可反馈的机器人行动。即使云端不可达，每一次现场观察仍会成为下一次创作的素材。</p>
           </div>
           <a class="button primary" href="#top">回到顶部 ↑</a>
         </div>
@@ -634,7 +671,7 @@
 
   <footer>
     <div class="shell footer-inner">
-      <span>VLA Navigation · InternVLA × Step3‑VL × NVIDIA Isaac × ROS 2 / Nav2</span>
+      <span>VLA Navigation · Step 3.7 Flash × Step3‑VL × NVIDIA DGX Spark / Isaac × ROS 2 / Nav2</span>
       <span>Local-first embodied agent · <span id="year">2026</span></span>
     </div>
   </footer>
