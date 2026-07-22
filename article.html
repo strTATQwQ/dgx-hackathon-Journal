@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="E-MARS：基于端侧多模态 AI Agent 的自主消防救援机器人开发纪实裸文本。">
+  <meta name="theme-color" content="#0b0d0c">
+  <meta property="og:title" content="E-MARS 开发纪实｜裸文本版">
+  <meta property="og:description" content="从断网消防救援到研究型端侧算力，完整记录 E-MARS 的系统设计、控制链与工程实现。">
+  <meta property="og:type" content="article">
+  <title>E-MARS 开发纪实｜裸文本版</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #171b17;
+      --paper: #f2f0e8;
+      --panel: #faf9f4;
+      --line: rgba(23, 27, 23, .16);
+      --muted: #656a62;
+      --lime: #c7ff43;
+      --night: #0b0d0c;
+      --max: 920px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+
+    a { color: inherit; }
+    a:focus-visible { outline: 3px solid #b78335; outline-offset: 4px; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid rgba(255, 255, 255, .12);
+      background: rgba(11, 13, 12, .96);
+      color: #f2f0e8;
+      backdrop-filter: blur(14px);
+    }
+
+    .topbar-inner,
+    .page {
+      width: min(calc(100% - 40px), var(--max));
+      margin: 0 auto;
+    }
+
+    .topbar-inner {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: .88rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 22px rgba(199, 255, 67, .7);
+    }
+
+    .actions { display: flex; align-items: center; gap: 10px; }
+    .action {
+      padding: 9px 13px;
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 999px;
+      color: inherit;
+      font-size: .82rem;
+      text-decoration: none;
+    }
+    .action:hover { border-color: var(--lime); }
+
+    .page { padding: 72px 0 96px; }
+
+    .intro {
+      padding-bottom: 36px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 800px;
+      margin: 0;
+      font-size: clamp(2.2rem, 6vw, 4.5rem);
+      line-height: .98;
+      letter-spacing: -.05em;
+    }
+
+    .subtitle {
+      max-width: 720px;
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.8;
+    }
+
+    .document {
+      margin-top: 36px;
+      padding: clamp(24px, 5vw, 58px);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      box-shadow: 0 22px 70px rgba(18, 23, 17, .09);
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: inherit;
+      font-family: "Noto Serif SC", "Source Han Serif SC", SimSun, serif;
+      font-size: clamp(1rem, 1.5vw, 1.08rem);
+      line-height: 2;
+    }
+
+    .status { color: var(--muted); }
+    .fallback {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.7;
+    }
+
+    footer {
+      padding: 28px 20px;
+      background: var(--night);
+      color: #a6aca2;
+      text-align: center;
+      font-size: .78rem;
+    }
+
+    @media (max-width: 640px) {
+      .topbar-inner { min-height: 60px; }
+      .action.download { display: none; }
+      .page { padding-top: 48px; }
+      .document { border-radius: 16px; }
+    }
+
+    @media print {
+      .topbar, footer, .fallback { display: none; }
+      .page { width: 100%; padding: 0; }
+      .intro { margin-bottom: 24px; }
+      .document { margin: 0; padding: 0; border: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html" aria-label="返回 E-MARS 项目首页">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>E-MARS</span>
+      </a>
+      <nav class="actions" aria-label="文章页面操作">
+        <a class="action download" href="E-MARS_开发纪实.txt" download>下载 TXT</a>
+        <a class="action" href="index.html">返回首页</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">Development Journal · Plain Text Edition</p>
+      <h1 id="page-title">E-MARS<br>开发纪实</h1>
+      <p class="subtitle">基于端侧多模态 AI Agent 的自主消防救援机器人。此页面直接读取仓库内的文章裸文本，确保网页版本与可下载 TXT 使用同一内容源。</p>
+    </section>
+
+    <article class="document" aria-label="E-MARS 开发纪实正文">
+      <pre id="article-text" class="status" aria-live="polite">正在载入开发纪实……</pre>
+      <noscript>
+        <p>浏览器未启用 JavaScript，请直接打开 <a href="E-MARS_开发纪实.txt">E-MARS 开发纪实 TXT 文件</a>。</p>
+      </noscript>
+    </article>
+
+    <p class="fallback">正文内容来自同一仓库中的 <a href="E-MARS_开发纪实.txt">E-MARS_开发纪实.txt</a>。若页面载入失败，可直接打开或下载原始文本。</p>
+  </main>
+
+  <footer>E-MARS · Edge-deployed Multimodal Agent for Robotic Search-and-rescue</footer>
+
+  <script>
+    (() => {
+      const target = document.getElementById('article-text');
+      fetch('E-MARS_开发纪实.txt', { cache: 'no-cache' })
+        .then((response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.text();
+        })
+        .then((content) => {
+          target.textContent = content;
+          target.classList.remove('status');
+        })
+        .catch(() => {
+          target.textContent = '正文暂时无法载入，请使用页面顶部的“下载 TXT”或下方原始文本链接。';
+        });
+    })();
+  </script>
+</body>
+</html>

@@ -10,7 +10,9 @@
 
 [https://strtatqwq.github.io/dgx-hackathon-Journal/](https://strtatqwq.github.io/dgx-hackathon-Journal/)
 
-文章裸文本：[E-MARS_开发纪实.txt](E-MARS_开发纪实.txt)
+开发纪实静态页面：[article.html](https://strtatqwq.github.io/dgx-hackathon-Journal/article.html)
+
+原始 TXT 文件：[E-MARS_开发纪实.txt](E-MARS_开发纪实.txt)
 
 ## 页面内容
 
