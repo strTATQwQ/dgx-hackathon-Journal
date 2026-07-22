@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "index.html"
+      - "article.html"
+      - "E-MARS_开发纪实.txt"
       - ".nojekyll"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
