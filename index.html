@@ -167,7 +167,8 @@
     .button:hover { transform: translateY(-2px); }
     .button.primary { border-color: var(--lime); background: var(--lime); color: var(--ink); }
     .button.github { min-height: 54px; padding-inline: 24px; border: 2px solid var(--lime); color: var(--ink); background: #f5f4ed; box-shadow: 0 0 0 4px rgba(199,255,67,.11), 0 16px 38px rgba(0,0,0,.22); }
-    .button.github::before { content: "GH"; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--lime); background: var(--ink); font: 800 10px ui-monospace, monospace; letter-spacing: .04em; }
+    .github-mark { display: grid; place-items: center; flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; color: var(--lime); background: var(--ink); }
+    .github-mark svg { display: block; width: 18px; height: 18px; fill: currentColor; }
     .button.github:hover { color: var(--ink); background: var(--lime); box-shadow: 0 0 0 5px rgba(199,255,67,.16), 0 18px 44px rgba(0,0,0,.28); }
     .hero-meta { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 70px; border-top: 1px solid var(--line-dark); }
     .hero-stat { padding: 22px 22px 0 0; }
@@ -326,7 +327,7 @@
     .source-card h2 { max-width: 850px; margin-bottom: 16px; font-size: clamp(40px, 6.5vw, 82px); }
     .source-card p:not(.eyebrow) { max-width: 720px; margin-bottom: 0; color: rgba(16,19,16,.72); font-size: 17px; line-height: 1.7; }
     .source-card .button.github { min-width: 250px; min-height: 64px; border-color: var(--ink); color: #f5f4ed; background: var(--ink); box-shadow: 0 18px 45px rgba(0,0,0,.24); }
-    .source-card .button.github::before { color: var(--ink); background: var(--lime); }
+    .source-card .github-mark { color: var(--ink); background: var(--lime); }
     .source-card .button.github:hover { color: var(--ink); background: #f5f4ed; }
     footer { padding: 28px 0 40px; color: #8e958b; background: var(--night); border-top: 1px solid var(--line-dark); }
     .footer-inner { display: flex; justify-content: space-between; gap: 24px; font-size: 12px; }
@@ -426,7 +427,10 @@
           <div class="hero-action">
             <a class="button primary" href="#architecture">查看控制链 <span aria-hidden="true">↓</span></a>
             <a class="button" href="article.html">开发纪实 <span aria-hidden="true">↗</span></a>
-            <a class="button github" href="https://github.com/strTATQwQ/E-MARS">GitHub · 查看完整源码 <span aria-hidden="true">↗</span></a>
+            <a class="button github" href="https://github.com/strTATQwQ/E-MARS">
+              <span class="github-mark" aria-hidden="true"><svg viewBox="0 0 24 24" role="img"><path d="M12 1C5.923 1 1 5.923 1 12c0 4.867 3.149 8.979 7.521 10.436.55.096.756-.233.756-.522 0-.262-.013-1.128-.013-2.049-3.104.569-3.909-.756-4.156-1.443-.124-.357-.66-1.443-1.128-1.732-.385-.206-.935-.715-.014-.729.866-.014 1.485.797 1.691 1.127.99 1.664 2.571 1.196 3.2.907.096-.715.385-1.196.701-1.471-2.475-.275-5.06-1.238-5.06-5.5 0-1.21.426-2.2 1.127-2.984-.11-.275-.495-1.416.11-2.943 0 0 .92-.288 3.024 1.141A10.193 10.193 0 0 1 12 6.844c.935 0 1.87.123 2.75.371 2.104-1.443 3.025-1.141 3.025-1.141.605 1.527.22 2.668.11 2.943.701.784 1.127 1.76 1.127 2.984 0 4.276-2.599 5.225-5.074 5.5.399.344.743 1.004.743 2.035 0 1.471-.014 2.654-.014 3.025 0 .289.206.632.756.522C19.851 20.979 23 16.854 23 12c0-6.077-4.922-11-11-11Z"/></svg></span>
+              GitHub · 查看完整源码 <span aria-hidden="true">↗</span>
+            </a>
           </div>
         </div>
         <div class="hero-meta" aria-label="项目关键特征">
@@ -792,7 +796,10 @@
             <h2>从架构说明，<br>继续走进完整源码。</h2>
             <p>E‑MARS 主仓集中提供 ROS 2 / Nav2 控制核心、InternVLA 与慢规划接口、Isaac 仿真运行时、传感器与恢复组件，以及公开的部署和技术栈文档。</p>
           </div>
-          <a class="button github" href="https://github.com/strTATQwQ/E-MARS" aria-label="在 GitHub 打开 E-MARS 完整源码">打开 GitHub 源码 <span aria-hidden="true">↗</span></a>
+          <a class="button github" href="https://github.com/strTATQwQ/E-MARS" aria-label="在 GitHub 打开 E-MARS 完整源码">
+            <span class="github-mark" aria-hidden="true"><svg viewBox="0 0 24 24" role="img"><path d="M12 1C5.923 1 1 5.923 1 12c0 4.867 3.149 8.979 7.521 10.436.55.096.756-.233.756-.522 0-.262-.013-1.128-.013-2.049-3.104.569-3.909-.756-4.156-1.443-.124-.357-.66-1.443-1.128-1.732-.385-.206-.935-.715-.014-.729.866-.014 1.485.797 1.691 1.127.99 1.664 2.571 1.196 3.2.907.096-.715.385-1.196.701-1.471-2.475-.275-5.06-1.238-5.06-5.5 0-1.21.426-2.2 1.127-2.984-.11-.275-.495-1.416.11-2.943 0 0 .92-.288 3.024 1.141A10.193 10.193 0 0 1 12 6.844c.935 0 1.87.123 2.75.371 2.104-1.443 3.025-1.141 3.025-1.141.605 1.527.22 2.668.11 2.943.701.784 1.127 1.76 1.127 2.984 0 4.276-2.599 5.225-5.074 5.5.399.344.743 1.004.743 2.035 0 1.471-.014 2.654-.014 3.025 0 .289.206.632.756.522C19.851 20.979 23 16.854 23 12c0-6.077-4.922-11-11-11Z"/></svg></span>
+            打开 GitHub 源码 <span aria-hidden="true">↗</span>
+          </a>
         </div>
       </div>
     </section>
