@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="让 Agent 创作行动：NVIDIA DGX Spark 同时作为断网救援智能体的现场算力与突破传统端侧瓶颈的科研平台。">
+  <meta name="description" content="E-MARS：基于端侧多模态 AI Agent 的自主消防救援机器人，以 NVIDIA DGX Spark 支撑断网救援决策与端侧具身智能科研。">
   <meta name="theme-color" content="#0b0d0c">
-  <meta property="og:title" content="让 Agent 创作行动｜VLA Navigation 开发历程">
+  <meta property="og:title" content="E-MARS｜基于端侧多模态 AI Agent 的自主消防救援机器人">
   <meta property="og:description" content="依托 NVIDIA DGX Spark，把多模态理解转化为可执行、可反馈的真实世界行动。">
   <meta property="og:type" content="website">
-  <title>让 Agent 创作行动｜DGX Hackathon Journal</title>
+  <title>E-MARS｜基于端侧多模态 AI Agent 的自主消防救援机器人</title>
   <style>
     :root {
       --ink: #101310;
@@ -20,7 +20,7 @@
       --line-dark: rgba(242, 240, 232, .17);
       --lime: #c7ff43;
       --mint: #73e2b7;
-      --amber: #f0b45d;
+      --gold: #f0b45d;
       --muted: #656a62;
       --muted-dark: #a6aca2;
       --max: 1180px;
@@ -50,7 +50,7 @@
     }
     a { color: inherit; }
     button, a { -webkit-tap-highlight-color: transparent; }
-    :focus-visible { outline: 3px solid var(--amber); outline-offset: 4px; }
+    :focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
     .skip-link {
       position: fixed;
       top: 12px;
@@ -387,7 +387,7 @@
     <div class="shell topbar-inner">
       <a class="brand" href="#top" aria-label="返回页面顶部">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span>VLA Navigation</span>
+        <span>E-MARS</span>
       </a>
       <nav class="nav" aria-label="页面章节">
         <a href="#origin">起点</a>
@@ -406,11 +406,12 @@
       <div class="orbital" aria-hidden="true"><span class="orbit-dot"></span></div>
       <div class="shell hero-content">
         <p class="eyebrow">技术开发竞赛 · NVIDIA × StepFun · 让 Agent 创作一切</p>
-        <h1>让 Agent<br><em>创作行动</em></h1>
+        <h1>E-MARS<br><em>让 Agent 创作行动</em></h1>
         <div class="hero-copy">
-          <p>“创作”不只发生在文字、图像与视频里。DGX Spark 既让断电、断网的楼宇救援 Agent 能在现场创作行动，也让科研人员把大型多模态模型、仿真和机器人闭环带到端侧。机器人从一句任务开始，持续观察、思考、行动，再根据新反馈创作下一步。</p>
+          <p><strong>E-MARS</strong>（Edge-deployed Multimodal Agent for Robotic Search-and-rescue），中文全称为“基于端侧多模态 AI Agent 的自主消防救援机器人”。“创作”不只发生在文字、图像与视频里：DGX Spark 既让断电、断网的楼宇救援 Agent 能在现场创作行动，也让科研人员把大型多模态模型、仿真和机器人闭环带到端侧。</p>
           <div class="hero-action">
             <a class="button primary" href="#architecture">查看控制链 <span aria-hidden="true">↓</span></a>
+            <a class="button" href="E-MARS_开发纪实.txt">开发纪实裸文本 <span aria-hidden="true">↗</span></a>
             <a class="button" href="https://github.com/strTATQwQ/vla-nav-panel">GitHub 源码 <span aria-hidden="true">↗</span></a>
           </div>
         </div>
@@ -539,7 +540,7 @@
           <div><p class="eyebrow">03 · Control Chain</p><h2>模型不是驾驶员，<br>它是决策系统的一部分。</h2></div>
           <p class="lead">控制链采用“语义智能 + 确定性执行”的分层结构。所有消息携带 episode、reset、sequence 与 snapshot 身份，旧观测和跨轮次动作不会被误接到当前机器人状态。</p>
         </div>
-        <div class="chain reveal" aria-label="VLA Navigation 控制链示意图">
+        <div class="chain reveal" aria-label="E-MARS 控制链示意图">
           <div class="chain-node"><span class="chain-kicker">01 · INTENT</span><strong>自然语言任务</strong><small>来自评测 episode 或操作入口，形成明确目标与身份。</small></div>
           <div class="chain-node"><span class="chain-kicker">02 · OBSERVE</span><strong>RGB‑D 与多视角快照</strong><small>Isaac 或真实传感器提供同步视觉、位姿与历史。</small></div>
           <div class="chain-node"><span class="chain-kicker">03 · FAST</span><strong>InternVLA 快速路径</strong><small>高频生成局部轨迹、离散动作或短程候选。</small></div>
@@ -698,7 +699,7 @@
           <div>
             <p class="eyebrow">What We Built</p>
             <h2>Agent 创作的，<br>不只是答案，<br>而是下一步行动。</h2>
-            <p>VLA Navigation 对「让 Agent 创作一切」的回答有两层：面向救援，把创作从数字内容延伸到断网现场；面向科研，把端侧从“部署优化后模型的终点”变成“研究大型 Agent 的起点”。依托 NVIDIA DGX Spark，Step3‑VL 创作实时空间语义，Step 3.7 Flash 组织高层环境探索，InternVLA 生成快速局部决策，ROS 2 / Nav2 将它们变成可执行、可反馈的机器人行动。</p>
+            <p>E-MARS 对「让 Agent 创作一切」的回答有两层：面向救援，把创作从数字内容延伸到断网现场；面向科研，把端侧从“部署优化后模型的终点”变成“研究大型 Agent 的起点”。依托 NVIDIA DGX Spark，Step3‑VL 创作实时空间语义，Step 3.7 Flash 组织高层环境探索，InternVLA 生成快速局部决策，ROS 2 / Nav2 将它们变成可执行、可反馈的机器人行动。</p>
           </div>
           <a class="button primary" href="#top">回到顶部 ↑</a>
         </div>
@@ -708,7 +709,7 @@
 
   <footer>
     <div class="shell footer-inner">
-      <span>VLA Navigation · Step 3.7 Flash × Step3‑VL × NVIDIA DGX Spark / Isaac × ROS 2 / Nav2</span>
+      <span>E-MARS · Step 3.7 Flash × Step3‑VL × NVIDIA DGX Spark / Isaac × ROS 2 / Nav2</span>
       <span>Local-first embodied agent · <span id="year">2026</span></span>
     </div>
   </footer>
