@@ -282,10 +282,16 @@
     .tech-table td:first-child { width: 150px; color: var(--muted); font: 700 12px ui-monospace, monospace; }
     .tech-table td:nth-child(2) { width: 250px; font-weight: 750; }
     .tech-table tr:last-child td { border-bottom: 0; }
-    .revision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
-    .revision-card { padding: 20px; border-radius: 16px; color: #f1f0e9; background: var(--night); }
-    .revision-card span { display: block; margin-bottom: 12px; color: var(--lime); font: 700 11px ui-monospace, monospace; letter-spacing: .08em; }
-    .revision-card code { color: #c7cec4; overflow-wrap: anywhere; font-size: 12px; }
+    .isaac-spotlight { position: relative; display: grid; grid-template-columns: .7fr 1.3fr; gap: 48px; margin-top: 24px; padding: clamp(32px, 5vw, 58px); overflow: hidden; border-radius: var(--radius); color: #f1f0e9; background: var(--night); box-shadow: var(--shadow); }
+    .isaac-spotlight::after { content: "ISAAC"; position: absolute; right: -28px; bottom: -64px; color: rgba(199,255,67,.045); font-size: clamp(120px, 20vw, 300px); font-weight: 900; line-height: 1; letter-spacing: -.07em; pointer-events: none; }
+    .isaac-title, .isaac-copy { position: relative; z-index: 1; }
+    .isaac-title h3 { margin: 0; font-size: clamp(32px, 5vw, 58px); line-height: 1.02; letter-spacing: -.04em; }
+    .isaac-title .eyebrow { color: var(--lime); }
+    .isaac-copy p { color: #bec4bb; font-size: 17px; line-height: 1.85; }
+    .isaac-copy p strong { color: #f1f0e9; }
+    .isaac-copy a { color: var(--lime); text-decoration-color: rgba(199,255,67,.4); text-underline-offset: 3px; }
+    .isaac-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+    .isaac-chips span { padding: 8px 11px; border: 1px solid var(--line-dark); border-radius: 999px; color: #c7cec4; font: 700 11px ui-monospace, monospace; letter-spacing: .05em; }
 
     .deployment { background: var(--paper-2); }
     .deploy-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; }
@@ -329,7 +335,7 @@
       .stack-card { min-height: auto; }
       .stack-card .stack-label { margin-bottom: 30px; }
       .stack-card h3 { margin-top: 0; }
-      .revision-grid { grid-template-columns: 1fr; }
+      .isaac-spotlight { grid-template-columns: 1fr; }
       .optimization { grid-template-columns: 1fr; }
       .scenario-flow { grid-template-columns: repeat(2, 1fr); }
       .research-case { grid-template-columns: 1fr; }
@@ -671,11 +677,21 @@
             </tbody>
           </table>
         </div>
-        <div class="revision-grid reveal" aria-label="固定模型与上游 revision">
-          <div class="revision-card"><span>STEP3‑VL‑10B</span><code>5026053b0c2f5dfaa08fc2d149384162c3c8bca1</code></div>
-          <div class="revision-card"><span>COSMOS REASON2 32B</span><code>4ed9828334c4397ace8b0c62134961adbe5aed0e</code></div>
-          <div class="revision-card"><span>INTERNNAV UPSTREAM</span><code>7a5c62400ac45b313d9b709c740b64191556a242</code></div>
-        </div>
+        <article class="isaac-spotlight reveal">
+          <div class="isaac-title">
+            <p class="eyebrow">NVIDIA Isaac Stack</p>
+            <h3>把机器人研发，<br>从拼接工具变成一条完整工作流。</h3>
+          </div>
+          <div class="isaac-copy">
+            <p><strong>NVIDIA Isaac 技术栈的强大，首先来自它把过去分散的场景、物理、传感器、学习框架和 ROS 2 运行时放进了同一套可组合体系。</strong>在 <a href="https://docs.isaacsim.omniverse.nvidia.com/latest/">Isaac Sim</a> 中，我们用 Omniverse USD 描述建筑、Go2、相机和碰撞关系，用 PhysX 提供可重复的刚体运动与接触反馈，再从同一个世界生成 RGB‑D、LiDAR、IMU、里程计和时钟。更换场景、移动相机、调整材质或重新布置障碍时，不必重写模型接口和控制代码；仿真世界仍沿用同一套资产表达、坐标关系和传感器边界，让一次工程修改能够稳定传递到后续评测。</p>
+            <p><strong>它的易用并不是“隐藏复杂度”，而是把复杂度整理成可复用的模块。</strong><a href="https://isaac-sim.github.io/IsaacLab/develop/source/setup/ecosystem.html">Isaac Lab</a> 在 Isaac Sim 之上提供模块化环境、机器人、传感器、任务和配置工作流，既能快速搭建直接控制实验，也能复用 manager-based 结构扩展机器人学习任务。研究者可以围绕同一个 InteractiveScene 和传感器栈更换任务、控制器或学习算法，不必每次都从物理循环、批量环境、观测组织和 reset 逻辑重新开始。对于黑客松这样时间高度受限的项目，这种“已有组件可直接组合、关键接口仍可扩展”的设计，显著缩短了从概念到可运行闭环的距离。</p>
+            <p><strong>Isaac ROS 又把仿真的便利继续延伸到真实导航。</strong><a href="https://nvidia-isaac-ros.github.io/repositories_and_packages/isaac_ros_nvblox/index.html">Isaac ROS Nvblox</a> 能接收深度与位姿，在 GPU 上重建三维环境，并把二维代价地图直接交给 Nav2；<a href="https://nvidia-isaac-ros.github.io/repositories_and_packages/isaac_ros_visual_slam/index.html">Isaac ROS Visual SLAM / cuVSLAM</a> 则可利用双目视觉与 IMU 提供里程计和定位来源。对 E‑MARS 来说，这意味着 Isaac Sim 中验证过的 RGB‑D、TF、地图、costmap 与 Nav2 消息边界可以继续用于 Go2 真机链路，开发团队无需为“仿真能跑”和“机器人能跑”维护两套完全不同的系统。</p>
+            <p>最终，Isaac 带来的价值不只是 GPU 加速或画面逼真，而是<strong>可视化、物理、传感器、学习、ROS 2 与导航之间拥有清晰而连续的接口</strong>。我们可以先在可复现世界里排查坐标、碰撞、观测与停止条件，再把同一套模型服务和 Nav2 适配层接向真实传感器；出现问题时，也能沿着 USD 场景、传感器话题、定位、costmap、规划和控制逐层定位。强大的底层能力与易组合的上层工作流结合在一起，才使 DGX Spark 上的大模型、Isaac 仿真和具身机器人控制真正形成快速迭代的端侧研究平台。</p>
+            <div class="isaac-chips" aria-label="NVIDIA Isaac 技术组件">
+              <span>ISAAC SIM</span><span>ISAAC LAB</span><span>ISAAC ROS</span><span>OMNIVERSE USD</span><span>PHYSX</span><span>NVBLOX</span><span>CUVSLAM</span><span>ROS 2 / NAV2</span>
+            </div>
+          </div>
+        </article>
         <p class="stack-footnote reveal"><a href="https://www.nvidia.com/en-in/products/workstations/dgx-spark/">NVIDIA DGX Spark</a> 官方定位包含本地大型模型与 Agent 开发测试；<a href="https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/">Jetson Orin</a> 则继续服务于高能效机器人和边缘部署，两者在本项目中是研究层与部署层的互补。<a href="https://github.com/stepfun-ai/Step-3.7-Flash">Step 3.7 Flash</a> 用于双机构型的高层环境探索。页面不发布模型权重、数据集或实验结果文件。</p>
       </div>
     </section>

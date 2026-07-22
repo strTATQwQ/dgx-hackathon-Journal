@@ -20,7 +20,7 @@
 - 七阶段开发历程
 - 快 / 慢双路径控制链
 - Step3-VL 在多视角理解、目标落地和候选排序中的作用
-- NVIDIA、阶跃星辰、ROS 2 / Nav2 技术栈与固定模型 revision
+- NVIDIA Isaac、阶跃星辰、ROS 2 / Nav2 技术栈
 - DGX Spark 本地部署与大模型优化方案
 
 详细部署步骤位于工程主仓的 [`docs/deployment.md`](https://github.com/strTATQwQ/E-MARS/blob/sim/docs/deployment.md)；本 Pages 站点聚焦项目故事、控制链、模型定位和技术栈。
