@@ -4,6 +4,8 @@
 
 作品面向建筑火灾造成断电、室内通信中断的救援场景：当云端链路不可依赖时，由现场 DGX Spark 持续完成多模态环境理解与 Agent 决策。单机构型使用 Step3-VL 进行高实时性语义导航；双机构型由 Step 3.7 Flash 负责高层环境探测与任务规划，导航节点持续执行和反馈。D435 与四路环视相机补足 Go2 原生低位前摄的观察范围，原型供电则在 STM32 打样周期不足时采用逆变器方案完成。
 
+项目同时探索 DGX Spark 作为端侧科研工具的价值。Jetson 仍适合低功耗传感器处理、机器人控制和优化后模型部署；DGX Spark 则利用 128GB 统一内存和 Grace Blackwell 算力，把大型视觉语言模型、多模型协同、仿真及 ROS 2 闭环研究带到现场，减少传统嵌入式资源对科研问题规模的提前限制。
+
 ## 在线阅读
 
 [https://strtatqwq.github.io/dgx-hackathon-Journal/](https://strtatqwq.github.io/dgx-hackathon-Journal/)
