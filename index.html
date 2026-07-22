@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="VLA Navigation：InternVLA、Step3-VL、NVIDIA Isaac、ROS 2 与 Nav2 构成的本地具身智能体开发历程。">
+  <meta name="theme-color" content="#0b0d0c">
+  <meta property="og:title" content="让 Agent 在真实世界里走起来｜VLA Navigation 开发历程">
+  <meta property="og:description" content="从 Isaac 模拟基线到真实 Go2、多视角语义慢规划与可观测控制闭环。">
+  <meta property="og:type" content="website">
+  <title>让 Agent 在真实世界里走起来｜DGX Hackathon Journal</title>
+  <style>
+    :root {
+      --ink: #101310;
+      --paper: #f2f0e8;
+      --paper-2: #e8e5da;
+      --night: #0b0d0c;
+      --night-2: #121612;
+      --line: rgba(16, 19, 16, .17);
+      --line-dark: rgba(242, 240, 232, .17);
+      --lime: #c7ff43;
+      --mint: #73e2b7;
+      --amber: #f0b45d;
+      --muted: #656a62;
+      --muted-dark: #a6aca2;
+      --max: 1180px;
+      --radius: 24px;
+      --shadow: 0 24px 70px rgba(18, 23, 17, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.75;
+      text-rendering: optimizeLegibility;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .28;
+      z-index: 20;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E");
+    }
+    a { color: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    :focus-visible { outline: 3px solid var(--amber); outline-offset: 4px; }
+    .skip-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      padding: 10px 16px;
+      background: var(--lime);
+      color: var(--ink);
+      z-index: 100;
+      transform: translateY(-160%);
+    }
+    .skip-link:focus { transform: translateY(0); }
+    .scroll-progress {
+      position: fixed;
+      inset: 0 auto auto 0;
+      z-index: 80;
+      height: 3px;
+      width: 0;
+      background: var(--lime);
+    }
+    .shell { width: min(calc(100% - 40px), var(--max)); margin-inline: auto; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 18px;
+      font: 700 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 28px; height: 2px; background: currentColor; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2, h3 { line-height: 1.08; letter-spacing: -.035em; }
+    h2 { margin-bottom: 24px; font-size: clamp(36px, 6vw, 72px); }
+    h3 { font-size: clamp(21px, 3vw, 30px); }
+    .lead { max-width: 760px; font-size: clamp(18px, 2.3vw, 24px); line-height: 1.6; }
+    .muted { color: var(--muted); }
+
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 60;
+      height: 70px;
+      color: #f5f4ed;
+      background: rgba(11, 13, 12, .78);
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(18px);
+    }
+    .topbar-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 22px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: -.02em; text-decoration: none; white-space: nowrap; }
+    .brand-mark { width: 22px; height: 22px; position: relative; border: 2px solid var(--lime); border-radius: 50%; }
+    .brand-mark::after { content: ""; position: absolute; width: 10px; height: 2px; right: -7px; top: 8px; background: var(--lime); transform: rotate(-35deg); }
+    .nav { display: flex; gap: 24px; overflow-x: auto; scrollbar-width: none; }
+    .nav a { color: #b7bdb4; font-size: 13px; text-decoration: none; white-space: nowrap; transition: color .2s ease; }
+    .nav a:hover, .nav a.active { color: var(--lime); }
+
+    .hero {
+      min-height: 100svh;
+      display: grid;
+      align-items: end;
+      position: relative;
+      overflow: hidden;
+      padding: 150px 0 72px;
+      color: #f4f2ea;
+      background:
+        radial-gradient(circle at 79% 26%, rgba(199,255,67,.18), transparent 23%),
+        radial-gradient(circle at 20% 84%, rgba(115,226,183,.12), transparent 28%),
+        var(--night);
+    }
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      opacity: .18;
+      background-image:
+        linear-gradient(rgba(255,255,255,.16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.16) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
+    }
+    .orbital {
+      position: absolute;
+      right: clamp(-180px, -7vw, -70px);
+      top: 12%;
+      width: min(49vw, 650px);
+      aspect-ratio: 1;
+      border: 1px solid rgba(199,255,67,.34);
+      border-radius: 50%;
+      animation: orbit 24s linear infinite;
+    }
+    .orbital::before, .orbital::after { content: ""; position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,.16); }
+    .orbital::before { inset: 13%; }
+    .orbital::after { inset: 35%; background: rgba(199,255,67,.08); }
+    .orbit-dot { position: absolute; left: 8%; top: 24%; width: 14px; height: 14px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 38px var(--lime); }
+    @keyframes orbit { to { transform: rotate(360deg); } }
+    .hero-content { position: relative; z-index: 2; }
+    .hero h1 { max-width: 970px; margin-bottom: 28px; font-size: clamp(58px, 10.2vw, 142px); font-weight: 850; }
+    .hero h1 em { color: var(--lime); font-style: normal; }
+    .hero-copy { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(280px, .7fr); align-items: end; gap: 50px; }
+    .hero-copy p { max-width: 720px; margin-bottom: 0; color: #c3c8c0; font-size: clamp(18px, 2vw, 24px); }
+    .hero-action { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 0 19px;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 999px;
+      color: #f5f4ed;
+      font-weight: 750;
+      text-decoration: none;
+      transition: transform .2s ease, background .2s ease, color .2s ease;
+    }
+    .button:hover { transform: translateY(-2px); }
+    .button.primary { border-color: var(--lime); background: var(--lime); color: var(--ink); }
+    .hero-meta { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 70px; border-top: 1px solid var(--line-dark); }
+    .hero-stat { padding: 22px 22px 0 0; }
+    .hero-stat strong { display: block; color: var(--lime); font-size: clamp(28px, 4vw, 50px); line-height: 1; letter-spacing: -.05em; }
+    .hero-stat span { color: var(--muted-dark); font-size: 13px; }
+
+    section { padding: clamp(88px, 12vw, 150px) 0; }
+    .section-head { display: grid; grid-template-columns: .62fr 1.38fr; gap: 50px; margin-bottom: 66px; }
+    .section-head .lead { margin-bottom: 0; }
+    .origin-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 28px; }
+    .origin-story, .principles { border: 1px solid var(--line); border-radius: var(--radius); }
+    .origin-story { padding: clamp(28px, 5vw, 56px); background: #f8f6ef; box-shadow: var(--shadow); }
+    .origin-story p { font-size: 18px; }
+    .principles { display: grid; overflow: hidden; }
+    .principle { padding: 26px; border-bottom: 1px solid var(--line); background: var(--paper-2); }
+    .principle:last-child { border-bottom: 0; }
+    .principle span { display: block; margin-bottom: 8px; color: var(--muted); font: 700 11px ui-monospace, monospace; letter-spacing: .12em; }
+    .principle strong { font-size: 18px; }
+
+    .journey { color: #f2f1e9; background: var(--night); }
+    .journey .muted { color: var(--muted-dark); }
+    .timeline { position: relative; }
+    .timeline::before { content: ""; position: absolute; top: 0; bottom: 0; left: 118px; width: 1px; background: linear-gradient(var(--lime), rgba(199,255,67,.05)); }
+    .phase { display: grid; grid-template-columns: 118px 1fr; gap: 42px; padding: 0 0 72px; position: relative; }
+    .phase:last-child { padding-bottom: 0; }
+    .phase-index { color: var(--lime); font: 700 12px ui-monospace, monospace; letter-spacing: .12em; }
+    .phase-index::after { content: ""; position: absolute; left: 112px; top: 2px; width: 13px; height: 13px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 6px rgba(199,255,67,.12); }
+    .phase-body { display: grid; grid-template-columns: .72fr 1.28fr; gap: 45px; padding-bottom: 48px; border-bottom: 1px solid var(--line-dark); }
+    .phase:last-child .phase-body { border-bottom: 0; padding-bottom: 0; }
+    .phase h3 { margin-bottom: 12px; }
+    .phase p { color: #b4bab1; }
+    .phase-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    .tag { padding: 6px 10px; border: 1px solid var(--line-dark); border-radius: 999px; color: #cbd0c8; font: 650 11px ui-monospace, monospace; }
+
+    .architecture { background: #f6f4ed; }
+    .chain {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      padding: 24px;
+      background: var(--night);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+    }
+    .chain-node {
+      min-height: 210px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      padding: 23px;
+      color: #efeee8;
+      background: #151915;
+      border: 1px solid var(--line-dark);
+      border-radius: 18px;
+    }
+    .chain-node::after { content: "→"; position: absolute; top: 50%; right: -22px; z-index: 2; color: var(--lime); font-size: 22px; }
+    .chain-node:nth-child(4)::after, .chain-node:last-child::after { display: none; }
+    .chain-node:nth-child(5) { grid-column: 4; }
+    .chain-node:nth-child(6) { grid-column: 3; grid-row: 2; }
+    .chain-node:nth-child(7) { grid-column: 2; grid-row: 2; }
+    .chain-node:nth-child(8) { grid-column: 1; grid-row: 2; }
+    .chain-node:nth-child(n+5)::after { content: "←"; left: -22px; right: auto; }
+    .chain-kicker { color: var(--lime); font: 700 11px ui-monospace, monospace; letter-spacing: .12em; }
+    .chain-node strong { display: block; margin: 12px 0; font-size: 21px; line-height: 1.18; }
+    .chain-node small { color: #9ea59b; line-height: 1.5; }
+    .chain-note { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px; }
+    .note-card { padding: 28px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+    .note-card strong { display: block; margin-bottom: 10px; font-size: 20px; }
+
+    .step3 { position: relative; overflow: hidden; color: #f1f0e9; background: #121610; }
+    .step3::after { content: "3"; position: absolute; right: -2vw; bottom: -20vw; color: rgba(199,255,67,.055); font-size: min(70vw, 900px); font-weight: 900; line-height: 1; pointer-events: none; }
+    .step3-grid { display: grid; grid-template-columns: .82fr 1.18fr; gap: 70px; position: relative; z-index: 2; }
+    .step3-copy { position: sticky; top: 110px; align-self: start; }
+    .step3-copy p { color: #b5bbb1; font-size: 18px; }
+    .capabilities { display: grid; gap: 14px; }
+    .capability { display: grid; grid-template-columns: 68px 1fr; gap: 22px; padding: 28px; border: 1px solid var(--line-dark); border-radius: 20px; background: rgba(255,255,255,.025); }
+    .capability-index { color: var(--lime); font: 750 12px ui-monospace, monospace; }
+    .capability h3 { margin-bottom: 10px; font-size: 23px; }
+    .capability p { margin-bottom: 0; color: #aeb4ab; }
+
+    .stack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .stack-card { min-height: 360px; display: flex; flex-direction: column; padding: 30px; border: 1px solid var(--line); border-radius: var(--radius); background: #f8f6ef; }
+    .stack-card.featured { color: #f3f2ea; background: var(--night); border-color: var(--night); }
+    .stack-card .stack-label { margin-bottom: auto; color: var(--muted); font: 750 11px ui-monospace, monospace; letter-spacing: .12em; }
+    .stack-card.featured .stack-label { color: var(--lime); }
+    .stack-card h3 { margin: 45px 0 18px; }
+    .stack-list { margin: 0; padding: 0; list-style: none; }
+    .stack-list li { padding: 9px 0; border-top: 1px solid var(--line); }
+    .stack-card.featured .stack-list li { border-color: var(--line-dark); color: #c5cac2; }
+    .stack-footnote { max-width: 880px; margin: 32px 0 0; color: var(--muted); }
+
+    .deployment { background: var(--paper-2); }
+    .deploy-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; }
+    .deploy-summary { padding: 34px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+    .deploy-summary h3 { margin-bottom: 18px; }
+    .deploy-summary ul { padding-left: 20px; }
+    .deploy-summary li { margin-bottom: 10px; }
+    .lanes { display: grid; gap: 14px; }
+    .machine { display: grid; grid-template-columns: 150px 1fr; gap: 24px; padding: 28px; border: 1px solid var(--line); border-radius: 20px; background: #f7f5ee; }
+    .machine-label { color: var(--muted); font: 750 11px ui-monospace, monospace; letter-spacing: .1em; }
+    .machine strong { display: block; margin-bottom: 8px; font-size: 21px; }
+    .optimization { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 36px; }
+    .optimization div { padding: 22px; border-radius: 16px; color: #e9e9e2; background: var(--night); }
+    .optimization strong { display: block; color: var(--lime); margin-bottom: 8px; }
+
+    .release { color: #f1f0e8; background: var(--night); }
+    .release-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
+    .repo-plan { display: grid; gap: 12px; }
+    .repo { display: grid; grid-template-columns: 50px 1fr; gap: 18px; padding: 24px; border: 1px solid var(--line-dark); border-radius: 18px; }
+    .repo-num { color: var(--lime); font: 750 12px ui-monospace, monospace; }
+    .repo strong { display: block; margin-bottom: 6px; font-size: 19px; }
+    .repo p { margin-bottom: 0; color: #aab0a7; }
+    .publish-boundary { padding: 34px; border-radius: var(--radius); color: var(--ink); background: var(--lime); }
+    .publish-boundary h3 { font-size: 30px; }
+    .publish-boundary ul { padding-left: 19px; }
+    .publish-boundary li { margin-bottom: 9px; }
+    .publish-boundary .button { margin-top: 16px; color: #f4f3ed; background: var(--ink); border-color: var(--ink); }
+
+    .closing { padding-bottom: 72px; background: var(--night); color: #f4f2eb; }
+    .closing-card { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 30px; padding: clamp(34px, 6vw, 70px); border: 1px solid var(--line-dark); border-radius: 30px; background: linear-gradient(135deg, rgba(199,255,67,.08), transparent 50%); }
+    .closing-card h2 { max-width: 820px; margin-bottom: 16px; font-size: clamp(40px, 7vw, 88px); }
+    .closing-card p { max-width: 700px; margin-bottom: 0; color: #b5bbb2; }
+    footer { padding: 28px 0 40px; color: #8e958b; background: var(--night); border-top: 1px solid var(--line-dark); }
+    .footer-inner { display: flex; justify-content: space-between; gap: 24px; font-size: 12px; }
+
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 900px) {
+      .shell { width: min(calc(100% - 28px), var(--max)); }
+      .nav { max-width: 60vw; }
+      .hero-copy, .section-head, .origin-grid, .phase-body, .step3-grid, .deploy-layout, .release-grid { grid-template-columns: 1fr; }
+      .hero-action { justify-content: flex-start; }
+      .hero-meta { grid-template-columns: repeat(2, 1fr); }
+      .phase { gap: 20px; }
+      .chain { grid-template-columns: repeat(2, 1fr); }
+      .chain-node { grid-column: auto !important; grid-row: auto !important; min-height: 175px; }
+      .chain-node::after { display: none; }
+      .step3-copy { position: static; }
+      .stack-grid { grid-template-columns: 1fr; }
+      .stack-card { min-height: auto; }
+      .stack-card .stack-label { margin-bottom: 30px; }
+      .stack-card h3 { margin-top: 0; }
+      .optimization { grid-template-columns: 1fr; }
+      .closing-card { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .topbar { height: 62px; }
+      .brand span:last-child { display: none; }
+      .nav { gap: 16px; }
+      .nav a:nth-child(-n+2) { display: none; }
+      .hero { padding-top: 120px; }
+      .hero h1 { font-size: clamp(52px, 18vw, 90px); }
+      .hero-meta { margin-top: 50px; }
+      .hero-stat { padding-right: 12px; }
+      .timeline::before { left: 21px; }
+      .phase { grid-template-columns: 42px 1fr; }
+      .phase-index { font-size: 0; }
+      .phase-index::after { left: 15px; }
+      .chain { grid-template-columns: 1fr; padding: 14px; }
+      .chain-note, .optimization { grid-template-columns: 1fr; }
+      .capability { grid-template-columns: 44px 1fr; padding: 22px; }
+      .machine { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="#top" aria-label="返回页面顶部">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>VLA Navigation</span>
+      </a>
+      <nav class="nav" aria-label="页面章节">
+        <a href="#origin">起点</a>
+        <a href="#journey">历程</a>
+        <a href="#architecture">控制链</a>
+        <a href="#step3">Step3‑VL</a>
+        <a href="#stack">技术栈</a>
+        <a href="#release">开源</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="orbital" aria-hidden="true"><span class="orbit-dot"></span></div>
+      <div class="shell hero-content">
+        <p class="eyebrow">DGX Hackathon · Development Story · 2026</p>
+        <h1>让 Agent<br>在真实世界里<em>走起来</em></h1>
+        <div class="hero-copy">
+          <p>我们把 InternVLA 的快速具身决策、Step3‑VL 的多视角语义推理、NVIDIA Isaac 的可复现仿真，以及 ROS 2 / Nav2 的可靠执行连接成一条本地闭环。从一句导航指令开始，直到机器人行动、观察、再判断。</p>
+          <div class="hero-action">
+            <a class="button primary" href="#architecture">查看控制链 <span aria-hidden="true">↓</span></a>
+            <a class="button" href="https://github.com/strTATQwQ/vla-nav-panel">GitHub 源码 <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+        <div class="hero-meta" aria-label="项目关键特征">
+          <div class="hero-stat"><strong>2</strong><span>快 / 慢推理路径</span></div>
+          <div class="hero-stat"><strong>4+3</strong><span>语义视角与实时传感器视图</span></div>
+          <div class="hero-stat"><strong>Local</strong><span>模型与智能体本地部署</span></div>
+          <div class="hero-stat"><strong>Closed</strong><span>观察—决策—执行闭环</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="origin">
+      <div class="shell">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">01 · Origin</p><h2>我们想解决的，<br>不是一次推理。</h2></div>
+          <p class="lead">多模态模型能描述眼前的世界，但具身 Agent 必须持续回答三个更难的问题：我在哪里、下一步做什么、怎样安全地把决定变成运动。</p>
+        </div>
+        <div class="origin-grid">
+          <article class="origin-story reveal">
+            <h3>从“看懂一张图”走向“完成一个任务”</h3>
+            <p>项目起点是自然语言视觉导航：让智能体根据指令和第一视角图像，在陌生室内环境中寻找目标。很快我们发现，模型输出只是控制链的一小段。仿真坐标、时间戳、相机外参、动作协议、局部规划、异常恢复、资源互斥和真机安全，任何一个环节不可信，最终结果就没有意义。</p>
+            <p>因此我们把目标重新定义为一套<strong>可观测、可复现、可安全收口的具身智能体系统</strong>。它既要让大模型发挥语义能力，也要把高频运动交给确定性的导航与安全组件；既能在 Isaac 中反复验证，也能平滑迁移到 Unitree Go2 的真实传感器链。</p>
+          </article>
+          <aside class="principles reveal" aria-label="工程原则">
+            <div class="principle"><span>PRINCIPLE 01</span><strong>先冻结接口，再并行开发</strong></div>
+            <div class="principle"><span>PRINCIPLE 02</span><strong>失败要安全，证据要可追溯</strong></div>
+            <div class="principle"><span>PRINCIPLE 03</span><strong>语义决策与运动执行解耦</strong></div>
+            <div class="principle"><span>PRINCIPLE 04</span><strong>仿真先行，真机逐级放行</strong></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="journey" id="journey">
+      <div class="shell">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">02 · Journey</p><h2>两条主对话，<br>一条演进主线。</h2></div>
+          <p class="lead muted">第一阶段建立导航核心与并行资源秩序；第二阶段把系统推向真实机器人、完整传感器和公开操作面板。下面记录的是关键决策，不是实验成绩单。</p>
+        </div>
+        <div class="timeline">
+          <article class="phase reveal">
+            <div class="phase-index">PHASE 01</div>
+            <div class="phase-body">
+              <div><h3>先审计任务，而不是先堆模型</h3><div class="phase-tags"><span class="tag">TASK AUDIT</span><span class="tag">FAIL CLOSED</span></div></div>
+              <p>早期我们同时调研 OmniNav、InternNav 与多种慢模型路线。一次重要的路线判断是：检查点、数据集、任务定义和动作空间必须完全匹配，任何缺失都应该在启动前明确阻断。这个阶段形成了后续一直沿用的分级门禁——场景、协议、单集、短批次、完整闭环逐级放行。</p>
+            </div>
+          </article>
+          <article class="phase reveal">
+            <div class="phase-index">PHASE 02</div>
+            <div class="phase-body">
+              <div><h3>跑通 InternVLA 与 Isaac 基线</h3><div class="phase-tags"><span class="tag">INTERNVLA</span><span class="tag">ISAAC SIM</span><span class="tag">RGB-D</span></div></div>
+              <p>模型常驻在 DGX Spark，Isaac 端负责场景、相机、位姿和 episode 生命周期。双方通过稳定协议交换自然语言、RGB‑D、历史观测与结构化动作。模型服务与仿真进程分离后，我们能独立定位“模型没看懂”和“仿真没执行”两类问题，也为后续双机部署打下基础。</p>
+            </div>
+          </article>
+          <article class="phase reveal">
+            <div class="phase-index">PHASE 03</div>
+            <div class="phase-body">
+              <div><h3>让动作进入 ROS 2 / Nav2</h3><div class="phase-tags"><span class="tag">ROS 2</span><span class="tag">NAV2</span><span class="tag">ADAPTER</span></div></div>
+              <p>我们没有让视觉语言模型直接输出速度，而是增加动作适配层：解析局部轨迹或离散动作，完成坐标变换、时效与身份检查，再交给 Nav2 做路径跟随、局部避障和停止。模型负责“去哪里、为什么”，导航栈负责“怎么走、何时停”，控制链由此获得清晰边界。</p>
+            </div>
+          </article>
+          <article class="phase reveal">
+            <div class="phase-index">PHASE 04</div>
+            <div class="phase-body">
+              <div><h3>T4：把系统拆成可验证模块</h3><div class="phase-tags"><span class="tag">SENSORS</span><span class="tag">LOCALIZATION</span><span class="tag">RECOVERY</span></div></div>
+              <p>传感器新鲜度、静态地图与局部代价地图、定位源选择、无进展检测、取消目标和恢复动作被拆成独立组件。Nvblox 与 cuVSLAM 作为可切换能力接入，同时保留明确回退路径。模块化不是为了目录整齐，而是为了在出现偏差时，能回答究竟是感知、定位、规划还是执行出了问题。</p>
+            </div>
+          </article>
+          <article class="phase reveal">
+            <div class="phase-index">PHASE 05</div>
+            <div class="phase-body">
+              <div><h3>T5：建立双 Lane 资源编排</h3><div class="phase-tags"><span class="tag">DGX LANES</span><span class="tag">RESOURCE LEASE</span><span class="tag">PROVENANCE</span></div></div>
+              <p>两条推理与仿真 Lane 使用独立 GPU、CPU、ROS domain、命名空间、端口和结果根目录。所有在线重任务必须先获得共享资源租约，同时申请两项资源时使用固定顺序避免死锁。每个候选都绑定代码版本、配置哈希与数据身份，让并行开发不会演变成互相覆盖的“玄学调参”。</p>
+            </div>
+          </article>
+          <article class="phase reveal">
+            <div class="phase-index">PHASE 06</div>
+            <div class="phase-body">
+              <div><h3>Step3‑VL 进入真实语义链</h3><div class="phase-tags"><span class="tag">STEP3-VL-10B</span><span class="tag">4-VIEW</span><span class="tag">SLOW PLANNER</span></div></div>
+              <p>Step3‑VL 从离散视点选择开始，逐步扩展到保存快照的离线回放、四相机同步观察，以及在线的有界语义顾问。它读取左前、正前、右前、后视画面和自然语言目标，输出场景摘要、目标证据、受阻方向、推荐候选与置信度，为快速控制链补上更长时间尺度的语义判断。</p>
+            </div>
+          </article>
+          <article class="phase reveal">
+            <div class="phase-index">PHASE 07</div>
+            <div class="phase-body">
+              <div><h3>从仿真走向真实 Go2 与公开面板</h3><div class="phase-tags"><span class="tag">UNITREE GO2</span><span class="tag">D435</span><span class="tag">OPERATOR UI</span></div></div>
+              <p>第二条主对话完成了 Go2 官方 ROS 2 通信、D435 RGB‑D、LiDAR、前相机和四路环境相机的接入，并用逐级安全确认验证站立与基础运动。随后，运行状态被整理为独立的 VLA Navigation Operator Panel：中间是多相机视图，两侧呈现任务、结构化决策、执行链、ROS 状态和本地推理资源。</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="architecture" id="architecture">
+      <div class="shell">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">03 · Control Chain</p><h2>模型不是驾驶员，<br>它是决策系统的一部分。</h2></div>
+          <p class="lead">控制链采用“语义智能 + 确定性执行”的分层结构。所有消息携带 episode、reset、sequence 与 snapshot 身份，旧观测和跨轮次动作不会被误接到当前机器人状态。</p>
+        </div>
+        <div class="chain reveal" aria-label="VLA Navigation 控制链示意图">
+          <div class="chain-node"><span class="chain-kicker">01 · INTENT</span><strong>自然语言任务</strong><small>来自评测 episode 或操作入口，形成明确目标与身份。</small></div>
+          <div class="chain-node"><span class="chain-kicker">02 · OBSERVE</span><strong>RGB‑D 与多视角快照</strong><small>Isaac 或真实传感器提供同步视觉、位姿与历史。</small></div>
+          <div class="chain-node"><span class="chain-kicker">03 · FAST</span><strong>InternVLA 快速路径</strong><small>高频生成局部轨迹、离散动作或短程候选。</small></div>
+          <div class="chain-node"><span class="chain-kicker">04 · SLOW</span><strong>Step3‑VL 语义路径</strong><small>理解场景、落地目标、比较方向并给出结构化建议。</small></div>
+          <div class="chain-node"><span class="chain-kicker">05 · RESOLVE</span><strong>身份与安全门</strong><small>检查新鲜度、合法候选、动作边界和当前控制所有权。</small></div>
+          <div class="chain-node"><span class="chain-kicker">06 · PLAN</span><strong>ROS 2 / Nav2</strong><small>完成坐标转换、可达性检查、路径跟随和局部避障。</small></div>
+          <div class="chain-node"><span class="chain-kicker">07 · ACT</span><strong>Isaac / Unitree Go2</strong><small>执行有界运动，并在命令过期、异常或停止时安全收口。</small></div>
+          <div class="chain-node"><span class="chain-kicker">08 · FEEDBACK</span><strong>新观测与恢复</strong><small>运动结果回到下一轮决策；无进展触发重观察或恢复。</small></div>
+        </div>
+        <div class="chain-note">
+          <div class="note-card reveal"><strong>正常闭环</strong><p class="muted">InternVLA 负责快速局部决策，Nav2 负责连续执行；动作完成后立刻用新观测更新历史。</p></div>
+          <div class="note-card reveal"><strong>语义慢规划</strong><p class="muted">当目标证据、候选选择或恢复方向需要更强语义判断时，Step3‑VL 对冻结的候选集合进行多视角比较。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step3" id="step3">
+      <div class="shell step3-grid">
+        <div class="step3-copy reveal">
+          <p class="eyebrow">04 · StepFun</p>
+          <h2>Step3‑VL：<br>为导航补上<br>“理解之后再行动”。</h2>
+          <p>在我们的系统里，Step3‑VL 不是聊天组件，也不直接接管底层速度。它是常驻于 DGX Spark 的多模态语义慢规划器，专注处理高价值、长时间尺度的判断，让快速路径保持流畅，让关键路口更有依据。</p>
+          <p>这种分工把模型能力放在最合适的位置：视觉语义、目标对齐、跨视角比较和策略建议；随后由既有的身份门、Nav2 与安全执行链把建议转化为可控动作。</p>
+        </div>
+        <div class="capabilities">
+          <article class="capability reveal"><div class="capability-index">01</div><div><h3>多视角场景理解</h3><p>同时读取左前、正前、右前与后视画面，建立比单帧更完整的空间语义，识别门洞、通道、家具、遮挡和可能的目标线索。</p></div></article>
+          <article class="capability reveal"><div class="capability-index">02</div><div><h3>自然语言目标落地</h3><p>把“走向客厅里的沙发”“穿过门后寻找桌子”这样的指令，与当前画面中的实体、方向和可行区域建立联系。</p></div></article>
+          <article class="capability reveal"><div class="capability-index">03</div><div><h3>候选方向与 frontier 排序</h3><p>在 Nav2 或快速路径给出的合法候选集合中比较前进、左转、右转、视点或 frontier，让语义判断进入真实控制链，同时保留确定性的动作边界。</p></div></article>
+          <article class="capability reveal"><div class="capability-index">04</div><div><h3>事件触发的深思考</h3><p>在观测受限、局部超时、目标证据变化或恢复阶段触发慢规划，输出场景摘要、证据、受阻方向、推荐候选、置信度与是否继续观察。</p></div></article>
+          <article class="capability reveal"><div class="capability-index">05</div><div><h3>结构化决策与可观测性</h3><p>推理结果被压缩为稳定 JSON 合同，操作面板只展示允许公开的决策摘要，不暴露隐藏推理、原始提示或内部文件路径。</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="shell">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">05 · Technology</p><h2>一套真正落地的<br>本地技术栈。</h2></div>
+          <p class="lead">技术选择围绕三个目标展开：本地算力充分利用、仿真到真机接口一致、每一层都能单独观测和回退。</p>
+        </div>
+        <div class="stack-grid">
+          <article class="stack-card featured reveal">
+            <span class="stack-label">NVIDIA PLATFORM & SDK</span>
+            <h3>NVIDIA 计算与仿真底座</h3>
+            <ul class="stack-list">
+              <li>DGX Spark · 本地大模型推理</li>
+              <li>CUDA / PyTorch · BF16 推理</li>
+              <li>Isaac Sim / Isaac Lab · 场景与评测</li>
+              <li>Omniverse USD / PhysX · 资产与物理</li>
+              <li>Isaac ROS · 感知与 ROS 集成</li>
+              <li>Nvblox / cuVSLAM · 建图与定位路线</li>
+              <li>Cosmos Reason2 · 慢模型研究路线</li>
+            </ul>
+          </article>
+          <article class="stack-card reveal">
+            <span class="stack-label">STEPFUN & VLA MODELS</span>
+            <h3>多模态推理与具身决策</h3>
+            <ul class="stack-list">
+              <li>Step3‑VL‑10B · 多视角语义慢规划</li>
+              <li>InternVLA / InternNav · 快速导航策略</li>
+              <li>结构化候选协议 · 可验证决策</li>
+              <li>常驻模型服务 · 跨 episode 复用</li>
+              <li>事件触发 · 快慢路径协同</li>
+            </ul>
+          </article>
+          <article class="stack-card reveal">
+            <span class="stack-label">ROBOTICS RUNTIME</span>
+            <h3>导航、传感器与产品界面</h3>
+            <ul class="stack-list">
+              <li>ROS 2 Jazzy · 通信与生命周期</li>
+              <li>Nav2 · 路径执行、局部避障与恢复</li>
+              <li>Unitree Go2 · 真实机器人平台</li>
+              <li>Intel RealSense D435 · RGB‑D</li>
+              <li>LiDAR + 四路环境相机 · 现场观测</li>
+              <li>FastAPI / WebSocket · Operator Panel</li>
+            </ul>
+          </article>
+        </div>
+        <p class="stack-footnote reveal">Cosmos Reason2、Nvblox 与 cuVSLAM 代表项目中完成接口审计或可切换接入的 NVIDIA 路线；最终控制链按任务与门禁选择启用组件。页面不发布模型权重、数据集或实验结果文件。</p>
+      </div>
+    </section>
+
+    <section class="deployment" id="deployment">
+      <div class="shell">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">06 · Local Deployment</p><h2>模型留在本地，<br>控制也留在本地。</h2></div>
+          <p class="lead">智能体不依赖云端 API。大模型、仿真、ROS 2 与操作面板通过局域网组成可复现部署，敏感视觉与机器人状态不离开现场。</p>
+        </div>
+        <div class="deploy-layout">
+          <div class="deploy-summary reveal">
+            <h3>部署顺序</h3>
+            <ol>
+              <li>准备模型缓存与固定版本依赖，校验权重和配置身份。</li>
+              <li>在 DGX Spark 启动 InternVLA 与 Step3‑VL 常驻服务。</li>
+              <li>在仿真工作站启动 Isaac、ROS 2 bridge 与 Nav2。</li>
+              <li>加载 episode 或现场任务，建立相机、位姿和动作合同。</li>
+              <li>先通过健康检查与静态门禁，再放行导航闭环。</li>
+              <li>真机侧沿用同一 ROS 2 消息边界，逐级开放执行能力。</li>
+            </ol>
+          </div>
+          <div class="lanes">
+            <div class="machine reveal"><span class="machine-label">COMPUTE</span><div><strong>DGX Spark：模型与语义</strong><p class="muted">运行 InternVLA 快速策略、Step3‑VL‑10B BF16 服务、结构化输出解析及本地资源监控。</p></div></div>
+            <div class="machine reveal"><span class="machine-label">SIMULATION</span><div><strong>Isaac 工作站：世界与执行</strong><p class="muted">运行 Isaac Sim、场景资产、相机渲染、ROS 2 bridge、Nav2 和评测生命周期。</p></div></div>
+            <div class="machine reveal"><span class="machine-label">ROBOT</span><div><strong>Unitree Go2：真实反馈</strong><p class="muted">提供机身状态、前相机、LiDAR 与运动接口；D435 和环境相机补充近场深度与多视角语义。</p></div></div>
+            <div class="machine reveal"><span class="machine-label">OPERATOR</span><div><strong>VLA Nav Panel：统一观察入口</strong><p class="muted">通过 allowlist 投影展示任务、相机、结构化决策、执行阶段和运行资源，不复制内部凭证与原始推理。</p></div></div>
+          </div>
+        </div>
+        <div class="optimization" aria-label="本地大模型优化方案">
+          <div class="reveal"><strong>BF16 + 常驻服务</strong>避免每个 episode 重新加载模型，减少启动等待与显存抖动。</div>
+          <div class="reveal"><strong>有界视觉协议</strong>固定四视角顺序、图像规格和快照身份，只发送决策所需信息。</div>
+          <div class="reveal"><strong>确定性解码</strong>限制输出 schema 与 token 预算，让结果能被控制链稳定解析。</div>
+          <div class="reveal"><strong>事件触发慢规划</strong>高频动作走快速路径，Step3‑VL 聚焦关键语义节点，提升算力利用率。</div>
+          <div class="reveal"><strong>资源隔离</strong>GPU、CPU、ROS domain、端口和结果目录按 Lane 分离，在线任务必须持有租约。</div>
+          <div class="reveal"><strong>安全回退</strong>超时、过期、跨 reset 或非法候选都会回到冻结策略并执行有界停止。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="release" id="release">
+      <div class="shell">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">07 · Open Source</p><h2>一个项目入口，<br>两个清晰仓库。</h2></div>
+          <p class="lead muted">不把所有模块挤进一个巨型仓库，也不把每个 ROS package 拆成难以复现的碎片。Pages 作为统一故事与文档入口，代码按“控制核心 / 产品界面”分为两个主要仓库。</p>
+        </div>
+        <div class="release-grid">
+          <div class="repo-plan">
+            <div class="repo reveal"><span class="repo-num">01</span><div><strong>Navigation Runtime · 工程主仓</strong><p>放置 InternVLA、Step3‑VL 接口、ROS 2 / Nav2 adapter、传感器、恢复、资源编排、仿真启动器与脱敏配置，是完整部署的权威入口。</p></div></div>
+            <div class="repo reveal"><span class="repo-num">02</span><div><strong>vla-nav-panel · 独立前端仓</strong><p>放置 Operator Panel、ROS telemetry sidecar、公开 schema、演示数据与本 GitHub Pages。它可以独立安装，也不会把大模型和仿真依赖带进轻量界面。</p></div></div>
+            <div class="repo reveal"><span class="repo-num">↳</span><div><strong>硬件与 CAD 先作为主仓目录</strong><p>相机支架与装配文档跟随系统版本发布；只有形成独立产品和稳定版本周期后，才考虑拆为第三个仓库。</p></div></div>
+          </div>
+          <aside class="publish-boundary reveal">
+            <h3>公开什么，也同样重要。</h3>
+            <p>GitHub 发布面向复现所需的源代码与说明，而不是把工作目录原样搬上网。</p>
+            <ul>
+              <li>发布：源码、脱敏配置、接口合同、架构说明、部署步骤与示例。</li>
+              <li>不发布：实验结果、运行日志、原始相机画面、数据集、模型权重。</li>
+              <li>不发布：内部 IP、主机名、用户名、凭证、私有路径和机器人身份材料。</li>
+              <li>所有公开文件在提交前经过 secret 与大文件边界检查。</li>
+            </ul>
+            <a class="button" href="https://github.com/strTATQwQ/vla-nav-panel">访问公开仓库 <span aria-hidden="true">↗</span></a>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="shell">
+        <div class="closing-card reveal">
+          <div>
+            <p class="eyebrow">What We Built</p>
+            <h2>不是让模型“说会走”，<br>而是让系统真的闭环。</h2>
+            <p>VLA Navigation 把 NVIDIA 本地算力、Isaac 仿真、Step3‑VL 多模态语义、InternVLA 快速决策与 ROS 2 / Nav2 执行组织成一个可继续演进的具身 Agent。下一步不是重写控制链，而是在已经冻结的边界内持续增强自然语言任务入口、语义规划策略与真机部署体验。</p>
+          </div>
+          <a class="button primary" href="#top">回到顶部 ↑</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <span>VLA Navigation · InternVLA × Step3‑VL × NVIDIA Isaac × ROS 2 / Nav2</span>
+      <span>Local-first embodied agent · <span id="year">2026</span></span>
+    </div>
+  </footer>
+
+  <script>
+    (() => {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const progress = document.querySelector('.scroll-progress');
+      const navLinks = [...document.querySelectorAll('.nav a')];
+      const sections = navLinks.map(link => document.querySelector(link.getAttribute('href'))).filter(Boolean);
+
+      const updateProgress = () => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        progress.style.width = `${max > 0 ? (window.scrollY / max) * 100 : 0}%`;
+      };
+      updateProgress();
+      window.addEventListener('scroll', updateProgress, { passive: true });
+
+      if (!reduceMotion && 'IntersectionObserver' in window) {
+        const revealObserver = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: .12 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+      } else {
+        document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+      }
+
+      if ('IntersectionObserver' in window) {
+        const sectionObserver = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === `#${entry.target.id}`));
+          });
+        }, { rootMargin: '-38% 0px -56% 0px' });
+        sections.forEach(section => sectionObserver.observe(section));
+      }
+
+      document.getElementById('year').textContent = String(new Date().getFullYear());
+    })();
+  </script>
+</body>
+</html>
