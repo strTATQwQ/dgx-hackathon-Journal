@@ -224,37 +224,36 @@
     .tag { padding: 6px 10px; border: 1px solid var(--line-dark); border-radius: 999px; color: #cbd0c8; font: 650 11px ui-monospace, monospace; }
 
     .architecture { background: #f6f4ed; }
-    .chain {
+    .control-map {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-      padding: 24px;
+      grid-template-columns: 1.15fr .82fr 1.35fr 1fr 1.15fr;
+      gap: 12px;
+      padding: 22px;
+      color: #efeee8;
       background: var(--night);
       border-radius: 30px;
       box-shadow: var(--shadow);
     }
-    .chain-node {
-      min-height: 210px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+    .control-stage {
+      min-width: 0;
       position: relative;
-      padding: 23px;
-      color: #efeee8;
-      background: #151915;
+      padding: 20px;
       border: 1px solid var(--line-dark);
       border-radius: 18px;
+      background: #151915;
     }
-    .chain-node::after { content: "→"; position: absolute; top: 50%; right: -22px; z-index: 2; color: var(--lime); font-size: 22px; }
-    .chain-node:nth-child(4)::after, .chain-node:last-child::after { display: none; }
-    .chain-node:nth-child(5) { grid-column: 4; }
-    .chain-node:nth-child(6) { grid-column: 3; grid-row: 2; }
-    .chain-node:nth-child(7) { grid-column: 2; grid-row: 2; }
-    .chain-node:nth-child(8) { grid-column: 1; grid-row: 2; }
-    .chain-node:nth-child(n+5)::after { content: "←"; left: -22px; right: auto; }
-    .chain-kicker { color: var(--lime); font: 700 11px ui-monospace, monospace; letter-spacing: .12em; }
-    .chain-node strong { display: block; margin: 12px 0; font-size: 21px; line-height: 1.18; }
-    .chain-node small { color: #9ea59b; line-height: 1.5; }
+    .control-stage::after { content: "→"; position: absolute; top: 50%; right: -22px; z-index: 2; color: var(--lime); font-size: 22px; }
+    .control-stage:last-child::after { display: none; }
+    .control-kicker { display: block; margin-bottom: 18px; color: var(--lime); font: 700 10px ui-monospace, monospace; letter-spacing: .12em; }
+    .control-stage h3 { margin: 0 0 14px; font-size: 20px; line-height: 1.2; }
+    .control-items { display: grid; gap: 9px; }
+    .control-branch { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .control-item { padding: 13px; border-radius: 12px; background: rgba(255,255,255,.045); }
+    .control-item.accent { color: var(--ink); background: var(--lime); }
+    .control-item strong { display: block; margin-bottom: 5px; font-size: 14px; line-height: 1.25; }
+    .control-item small { display: block; color: #9ea59b; line-height: 1.45; }
+    .control-item.accent small { color: rgba(16,19,16,.7); }
+    .feedback-loop { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-dark); color: var(--lime); font: 700 10px ui-monospace, monospace; letter-spacing: .07em; line-height: 1.5; }
     .chain-note { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px; }
     .note-card { padding: 28px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
     .note-card strong { display: block; margin-bottom: 10px; font-size: 20px; }
@@ -287,6 +286,17 @@
     .stack-list li { padding: 9px 0; border-top: 1px solid var(--line); }
     .stack-card.featured .stack-list li { border-color: var(--line-dark); color: #c5cac2; }
     .stack-footnote { max-width: 880px; margin: 32px 0 0; color: var(--muted); }
+    .tech-table-wrap { margin-top: 26px; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: #f8f6ef; }
+    .tech-table { width: 100%; min-width: 780px; border-collapse: collapse; }
+    .tech-table th, .tech-table td { padding: 15px 18px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; line-height: 1.5; }
+    .tech-table th { color: var(--muted); background: var(--paper-2); font: 750 11px ui-monospace, monospace; letter-spacing: .1em; }
+    .tech-table td:first-child { width: 150px; color: var(--muted); font: 700 12px ui-monospace, monospace; }
+    .tech-table td:nth-child(2) { width: 250px; font-weight: 750; }
+    .tech-table tr:last-child td { border-bottom: 0; }
+    .revision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+    .revision-card { padding: 20px; border-radius: 16px; color: #f1f0e9; background: var(--night); }
+    .revision-card span { display: block; margin-bottom: 12px; color: var(--lime); font: 700 11px ui-monospace, monospace; letter-spacing: .08em; }
+    .revision-card code { color: #c7cec4; overflow-wrap: anywhere; font-size: 12px; }
 
     .deployment { background: var(--paper-2); }
     .deploy-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; }
@@ -332,14 +342,15 @@
       .hero-action { justify-content: flex-start; }
       .hero-meta { grid-template-columns: repeat(2, 1fr); }
       .phase { gap: 20px; }
-      .chain { grid-template-columns: repeat(2, 1fr); }
-      .chain-node { grid-column: auto !important; grid-row: auto !important; min-height: 175px; }
-      .chain-node::after { display: none; }
+      .control-map { grid-template-columns: 1fr; }
+      .control-stage::after { content: "↓"; top: auto; right: 50%; bottom: -24px; transform: translateX(50%); }
+      .control-stage:last-child::after { display: none; }
       .step3-copy { position: static; }
       .stack-grid { grid-template-columns: 1fr; }
       .stack-card { min-height: auto; }
       .stack-card .stack-label { margin-bottom: 30px; }
       .stack-card h3 { margin-top: 0; }
+      .revision-grid { grid-template-columns: 1fr; }
       .optimization { grid-template-columns: 1fr; }
       .scenario-flow { grid-template-columns: repeat(2, 1fr); }
       .research-case { grid-template-columns: 1fr; }
@@ -540,15 +551,48 @@
           <div><p class="eyebrow">03 · Control Chain</p><h2>模型不是驾驶员，<br>它是决策系统的一部分。</h2></div>
           <p class="lead">控制链采用“语义智能 + 确定性执行”的分层结构。所有消息携带 episode、reset、sequence 与 snapshot 身份，旧观测和跨轮次动作不会被误接到当前机器人状态。</p>
         </div>
-        <div class="chain reveal" aria-label="E-MARS 控制链示意图">
-          <div class="chain-node"><span class="chain-kicker">01 · INTENT</span><strong>自然语言任务</strong><small>来自评测 episode 或操作入口，形成明确目标与身份。</small></div>
-          <div class="chain-node"><span class="chain-kicker">02 · OBSERVE</span><strong>RGB‑D 与多视角快照</strong><small>Isaac 或真实传感器提供同步视觉、位姿与历史。</small></div>
-          <div class="chain-node"><span class="chain-kicker">03 · FAST</span><strong>InternVLA 快速路径</strong><small>高频生成局部轨迹、离散动作或短程候选。</small></div>
-          <div class="chain-node"><span class="chain-kicker">04 · SLOW</span><strong>Step3‑VL 语义路径</strong><small>理解场景、落地目标、比较方向并给出结构化建议。</small></div>
-          <div class="chain-node"><span class="chain-kicker">05 · RESOLVE</span><strong>身份与安全门</strong><small>检查新鲜度、合法候选、动作边界和当前控制所有权。</small></div>
-          <div class="chain-node"><span class="chain-kicker">06 · PLAN</span><strong>ROS 2 / Nav2</strong><small>完成坐标转换、可达性检查、路径跟随和局部避障。</small></div>
-          <div class="chain-node"><span class="chain-kicker">07 · ACT</span><strong>Isaac / Unitree Go2</strong><small>执行有界运动，并在命令过期、异常或停止时安全收口。</small></div>
-          <div class="chain-node"><span class="chain-kicker">08 · FEEDBACK</span><strong>新观测与恢复</strong><small>运动结果回到下一轮决策；无进展触发重观察或恢复。</small></div>
+        <div class="control-map reveal" aria-label="E-MARS 本地智能体控制链示意图">
+          <section class="control-stage">
+            <span class="control-kicker">01 · NVIDIA SIMULATION</span>
+            <h3>Isaac Sim / Isaac Lab</h3>
+            <div class="control-items">
+              <div class="control-item"><strong>USD 场景 + Go2 物理</strong><small>世界、碰撞、渲染与机器人运动反馈。</small></div>
+              <div class="control-item"><strong>RGB‑D / LiDAR / IMU / Odom / Clock</strong><small>同步传感器与唯一仿真时钟。</small></div>
+              <div class="control-item"><strong>Episode / Reset / Evaluator</strong><small>任务身份、生命周期与评测入口。</small></div>
+            </div>
+          </section>
+          <section class="control-stage">
+            <span class="control-kicker">02 · BRIDGE</span>
+            <h3>ROS 2 Sensor Bridge</h3>
+            <div class="control-items">
+              <div class="control-item"><strong>Typed observations</strong><small>将传感器、任务身份和运动状态送入本地智能体。</small></div>
+            </div>
+          </section>
+          <section class="control-stage">
+            <span class="control-kicker">03 · MULTIMODAL AGENT</span>
+            <h3>身份与运动观测门</h3>
+            <div class="control-branch">
+              <div class="control-item accent"><strong>InternVLA 快速导航</strong><small>高频局部轨迹与动作。</small></div>
+              <div class="control-item"><strong>Step3‑VL 语义慢规划</strong><small>多视角语义候选决策。</small></div>
+            </div>
+          </section>
+          <section class="control-stage">
+            <span class="control-kicker">04 · RESOLUTION</span>
+            <h3>Typed Command Resolver</h3>
+            <div class="control-items">
+              <div class="control-item"><strong>定位 / Nvblox / Costmap</strong><small>向冻结候选提供位置、可达性与障碍约束。</small></div>
+              <div class="control-item"><strong>统一命令解析</strong><small>快慢路径汇合，校验身份、时效与动作边界。</small></div>
+            </div>
+          </section>
+          <section class="control-stage">
+            <span class="control-kicker">05 · EXECUTION</span>
+            <h3>Nav2 与安全执行</h3>
+            <div class="control-items">
+              <div class="control-item"><strong>Nav2 规划、控制与恢复</strong><small>地图、路径、局部避障和有界恢复。</small></div>
+              <div class="control-item"><strong>Watchdog + Go2 Command Bridge</strong><small>命令超时即停，执行结果返回 Isaac 或真实机器人。</small></div>
+            </div>
+            <div class="feedback-loop">↺ 运动与传感器反馈返回观测门</div>
+          </section>
         </div>
         <div class="chain-note">
           <div class="note-card reveal"><strong>正常闭环</strong><p class="muted">InternVLA 负责快速局部决策，Nav2 负责连续执行；动作完成后立刻用新观测更新历史。</p></div>
@@ -562,7 +606,7 @@
         <div class="step3-copy reveal">
           <p class="eyebrow">04 · StepFun</p>
           <h2>Step3‑VL：<br>创作对空间的<br>深层理解。</h2>
-          <p>在我们的系统里，Step3‑VL 是常驻于 DGX Spark 的多模态语义慢规划器。它把四个方向的视觉内容与自然语言任务组织成统一的空间叙事，再从中创作目标证据、方向比较和下一步策略，让快速路径保持流畅，让关键路口更有依据。</p>
+          <p>Step3‑VL 是系统的多视角语义慢规划层。它结合自然语言目标、场景图像、导航历史和可达候选，为 frontier、viewpoint 或运动 primitive 提供语义比较和高层决策，并与 InternVLA 快速路径在统一命令解析层汇合。</p>
           <p>这种分工把模型能力放在最合适的位置：视觉语义、目标对齐、跨视角比较和策略建议；随后由既有的身份门、Nav2 与安全执行链把建议转化为可控动作。</p>
         </div>
         <div class="capabilities">
@@ -624,6 +668,35 @@
               <li>FastAPI / WebSocket · Operator Panel</li>
             </ul>
           </article>
+        </div>
+        <div class="tech-table-wrap reveal" role="region" aria-label="E-MARS 技术栈明细" tabindex="0">
+          <table class="tech-table">
+            <thead><tr><th>分类</th><th>技术 / 模型</th><th>项目中的作用</th></tr></thead>
+            <tbody>
+              <tr><td>NVIDIA SDK</td><td>Isaac Sim 6.0.0.1</td><td>Go2、USD 场景、物理、相机和传感器仿真。</td></tr>
+              <tr><td>NVIDIA SDK</td><td>Isaac Lab 6.1.14</td><td>Go2 环境、传感器和仿真任务封装。</td></tr>
+              <tr><td>NVIDIA SDK</td><td>Isaac ROS release 4.5</td><td>NVIDIA ROS 2 感知与加速组件。</td></tr>
+              <tr><td>NVIDIA SDK</td><td>Isaac ROS Nvblox</td><td>RGB‑D / LiDAR 空间融合和 Nav2 costmap。</td></tr>
+              <tr><td>NVIDIA SDK</td><td>Isaac ROS Visual SLAM / cuVSLAM</td><td>视觉定位、里程计与可切换位姿来源。</td></tr>
+              <tr><td>NVIDIA SDK</td><td>Omniverse Kit / USD / PhysX</td><td>场景管理、渲染、USD 资产、碰撞与物理查询。</td></tr>
+              <tr><td>NVIDIA 平台</td><td>DGX Spark / NVIDIA GB10</td><td>本地多模态大模型、Agent 服务和 ROS 2 导航计算。</td></tr>
+              <tr><td>NVIDIA 平台</td><td>CUDA 13</td><td>GPU 推理和感知加速。</td></tr>
+              <tr><td>NVIDIA 大模型</td><td>Cosmos Reason2 32B BF16</td><td>多视角慢规划研究路线与语义候选比较。</td></tr>
+              <tr><td>StepFun 模型</td><td>Step3‑VL‑10B BF16</td><td>场景理解、候选视点选择和高层导航决策。</td></tr>
+              <tr><td>StepFun 模型</td><td>Step 3.7 Flash</td><td>双机构型的环境探索、任务分解和阶段性总结。</td></tr>
+              <tr><td>导航模型</td><td>InternVLA / InternNav</td><td>高频视觉语言导航和局部轨迹 / 动作生成。</td></tr>
+              <tr><td>机器人中间件</td><td>ROS 2 Jazzy</td><td>组件通信、消息、服务、Action、生命周期与身份传播。</td></tr>
+              <tr><td>导航框架</td><td>Nav2</td><td>地图、规划、控制、costmap、恢复与有界目标执行。</td></tr>
+              <tr><td>推理框架</td><td>PyTorch 2.12.1+cu130 + Transformers 4.57.6</td><td>本地多模态模型加载、BF16 推理与结构化生成。</td></tr>
+              <tr><td>通信</td><td>ROS 2 DDS、TCP / ZeroMQ、UDP</td><td>模型、传感器、时钟、遥测和控制数据交换。</td></tr>
+              <tr><td>机器人</td><td>Unitree Go2</td><td>仿真导航目标与独立安全门控制的真机平台。</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="revision-grid reveal" aria-label="固定模型与上游 revision">
+          <div class="revision-card"><span>STEP3‑VL‑10B</span><code>5026053b0c2f5dfaa08fc2d149384162c3c8bca1</code></div>
+          <div class="revision-card"><span>COSMOS REASON2 32B</span><code>4ed9828334c4397ace8b0c62134961adbe5aed0e</code></div>
+          <div class="revision-card"><span>INTERNNAV UPSTREAM</span><code>7a5c62400ac45b313d9b709c740b64191556a242</code></div>
         </div>
         <p class="stack-footnote reveal"><a href="https://www.nvidia.com/en-in/products/workstations/dgx-spark/">NVIDIA DGX Spark</a> 官方定位包含本地大型模型与 Agent 开发测试；<a href="https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/">Jetson Orin</a> 则继续服务于高能效机器人和边缘部署，两者在本项目中是研究层与部署层的互补。<a href="https://github.com/stepfun-ai/Step-3.7-Flash">Step 3.7 Flash</a> 用于双机构型的高层环境探索。页面不发布模型权重、数据集或实验结果文件。</p>
       </div>
